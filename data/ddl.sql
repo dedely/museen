@@ -93,7 +93,7 @@ CREATE TABLE artistic_movement_preference (
     amp_visitor_id CHAR(10),
     amp_artistic_movement_id CHAR(4),
     amp_score INT NOT NULL,
-    CONSTRAINT artist_preference_pk PRIMARY KEY (amp_visitor_id, amp_artistic_movement_id),
-    CONSTRAINT artist_preference_fk_visitor FOREIGN KEY (amp_visitor_id) REFERENCES visitor(visitor_id),
-    CONSTRAINT artist_preference_fk_artist FOREIGN KEY (amp_artistic_movement_id) REFERENCES artistic_movement(artistic_movement_id)
+    CONSTRAINT artist_movement_preference_pk PRIMARY KEY (amp_visitor_id, amp_artistic_movement_id),
+    CONSTRAINT artist_movement_preference_fk_visitor FOREIGN KEY (amp_visitor_id) REFERENCES visitor(visitor_id),
+    CONSTRAINT artist_movement_preference_fk_artist FOREIGN KEY (amp_artistic_movement_id) REFERENCES artistic_movement(artistic_movement_id)
 );
