@@ -8,3 +8,11 @@ Smart guided tours: visitors have an application that locates them inside the mu
 ## Contributors
   - Aëlien Moubêche
   - Adel Abbas
+
+## Running
+The museen network server only has 1 command-line option at the moment.
+
+Here's how you should run it :
+```bash
+make && ./server
+```
