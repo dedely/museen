@@ -68,6 +68,7 @@ typedef enum {
 
 typedef enum {
     EVENT_QUIT = 0,
+    EVENT_CONNECTED,
     EVENT_AUTH, /*Client sent a login key*/
     EVENT_QUERY, /*Client sent a query type*/
     EVENT_DATA, /*Client sent data*/

@@ -27,7 +27,7 @@ int create_tcp_server(int port, int clients_max) {
 
     /* create a listening  socket and pass it the (address/port)*/
     s_listen = socket(PF_INET, SOCK_STREAM, 0);
-    bind(s_listen, (struct sockaddr*)&serv_addr, sizeof serv_addr);
+    bind(s_listen, (struct sockaddr *)&serv_addr, sizeof serv_addr);
     listen(s_listen, clients_max); /* define s_listen as a listening socket*/
 
     return s_listen;

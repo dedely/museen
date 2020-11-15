@@ -22,7 +22,7 @@ ClientStateType timeout_handler();
  */
 void *handle_client(void *data) {
     int stop = 0;
-    int s_dial = *(int *) data; /*cast*/
+    int s_dial = *(int *)data; /*cast*/
     char buf[BUFFER_SIZE];
     ClientStateType next_state = CLIENT_INIT;
     EventType event;
@@ -74,6 +74,20 @@ void *handle_client(void *data) {
 }
 
 /**
+ * @brief  This filter is used to remove the last character in the buffer if it's a newline character.
+ *  P.S. : not my cleanest function...
+ * @param buf
+ * @param size
+ */
+char *filter(char *buf) {
+    int len = strlen(buf);
+    if ((len > 0) && (buf[len - 1] == '\n')) {
+        buf[len - 1] = '\0';
+    }
+    return buf;
+}
+
+/**
  * @brief
  *
  * @param s_dial
@@ -83,10 +97,19 @@ void *handle_client(void *data) {
  */
 EventType read_event(int s_dial, char *buf, int size) {
     int n = read(s_dial, buf, size);
-    EventType event = EVENT_QUIT;
+    EventType event;
+    if (n != 0) {
+        event = EVENT_CONNECTED;
 
-    printf("Recieved[%s]\n", buf);
-    //Code pour la lecture à compléter.
+        buf = filter(buf);
+        printf("Recieved:[%s]\n", buf);
+        printf("Sending back...\n");
+        write(s_dial, buf, n);
+        //Code pour la lecture à compléter.
+    }
+    else {
+        event = EVENT_QUIT;
+    }
 
     return event;
 }
