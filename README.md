@@ -10,9 +10,19 @@ Smart guided tours: visitors have an application that locates them inside the mu
   - Adel Abbas
 
 ## Running
-The museen network server only has 1 command-line option at the moment.
+The museen network server has 3 command-line options at the moment.
 
-Here's how you should run it :
+Here's how you should run it for the first time :
 ```bash
-make && ./server
+make && ./museen_tcp_server
+```
+
+Enter debug mode and directly test the database connection with:
+```bash
+./museen_tcp_server -d
+```
+
+Finally, you can list command-line options with
+```bash
+./museen_tcp_server -h
 ```

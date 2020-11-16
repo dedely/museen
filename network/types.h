@@ -76,4 +76,13 @@ typedef enum {
     EVENT_TIMEOUT_END /*The client timeout has ended*/
 } EventType;
 
+ enum ServerModeType{
+    RUN_EXIT = 0, /*exit*/
+#define RUN_EXIT RUN_EXIT
+    RUN_DEFAULT = 1, /*Default mode*/
+#define RUN_DEFAULT RUN_DEFAULT
+    RUN_DB_DEBUG = 2/*Database debug mode*/
+#define RUN_DB_DEBUG RUN_DB_DEBUG
+};
+
 #endif /*_TYPE_H_*/

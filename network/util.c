@@ -17,6 +17,7 @@
  */
 int create_tcp_server(int port, int clients_max) {
     int s_listen;
+    int so_reuseaddr = 1;
     struct sockaddr_in serv_addr;
 
     /* define which address/port we're using */
@@ -27,6 +28,8 @@ int create_tcp_server(int port, int clients_max) {
 
     /* create a listening  socket and pass it the (address/port)*/
     s_listen = socket(PF_INET, SOCK_STREAM, 0);
+    setsockopt(s_listen, SOL_SOCKET, SO_REUSEADDR, &so_reuseaddr,
+        sizeof so_reuseaddr);
     bind(s_listen, (struct sockaddr *)&serv_addr, sizeof serv_addr);
     listen(s_listen, clients_max); /* define s_listen as a listening socket*/
 
@@ -39,7 +42,7 @@ int create_tcp_server(int port, int clients_max) {
  * @return PGconn*
  */
 PGconn *connect_db() {
-    PGconn *conn = PQconnectdb(DB_INFO);
+    PGconn *conn = PQconnectdb(ONLINE_DB_INFO);
     if (PQstatus(conn) == CONNECTION_BAD) {
         printf("Connexion to database server failed : %s", PQerrorMessage(conn));
         exit(0);

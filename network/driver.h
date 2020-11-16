@@ -6,11 +6,11 @@
  * @brief  The thread that manages the client retrieves from the socket
  * what the client tells.
  *
- * @param data
+ * @param dial
  * @return void*
  */
-void *handle_client(void *data);
+void *handle_client(void *dial);
 
-EventType read_event(int s_dial, char *buf, int size);
+EventType read_event(int s_dial, char **data);
 
 #endif /* _DRIVER_H_ */
