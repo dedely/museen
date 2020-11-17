@@ -4,6 +4,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <string.h>
+#include <time.h>
 #include <unistd.h>
 #include "util.h"
 
@@ -47,7 +48,23 @@ PGconn *connect_db() {
         printf("Connexion to database server failed : %s", PQerrorMessage(conn));
         exit(0);
     }
-    else {
+    else if (PQstatus(conn) == CONNECTION_OK) {
         printf("Connected to database server\n");
     }
+    return conn;
+}
+
+char *get_timestamp() {
+    time_t rawtime;
+    struct tm *info;
+    char *timestamp = (char *)malloc(30 * sizeof(char));
+    if (timestamp == NULL) {
+        perror("Memory allocation error in function get_timestamp()\n");
+        exit(0);
+    }
+    time(&rawtime);
+    info = localtime(&rawtime);
+    strftime(timestamp, 30, "%Y-%m-%d %X", info);
+
+    return timestamp;
 }

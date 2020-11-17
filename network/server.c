@@ -1,10 +1,10 @@
 #include <stdlib.h>
-
 #include <unistd.h>
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <netinet/in.h>
 #include <pthread.h>
+#include <string.h>
 #include "util.h"
 #include "driver.h"
 
@@ -41,6 +41,23 @@ void run() {
     exit(EXIT_SUCCESS);
 }
 
-void run_debug(){
-    PGconn * connection = connect_db();
+void run_debug() {
+    PGconn *conn = connect_db();
+
+    //Sample insert query test: 
+    printf("Running INSERT INTO query test...\n");
+    char query[300] = "INSERT INTO \"public\".\"connection\" (name, time) VALUES(\'dedely\', \'";
+    char* timestamp = get_timestamp();
+    printf("%s\n", timestamp);
+    strcat(query, timestamp);
+    strcat(query, "\');");
+    PGresult *result;
+    result = PQexec(conn, query);
+    ExecStatusType resultStatus;
+    resultStatus = PQresultStatus(result);
+
+    printf("%s\n", PQresStatus(resultStatus));
+    printf("%s\n", PQresultErrorMessage(result));
+
+    PQfinish(conn);
 }
