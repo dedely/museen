@@ -1,1 +1,5 @@
 network/museen_tcp_server
+network/util.o
+network/server.o
+network/main.o
+network/driver.o
