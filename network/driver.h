@@ -1,6 +1,16 @@
 #ifndef _DRIVER_H_
 #define _DRIVER_H_
 #include "types.h"
+#include "server.h"
+
+ /**
+  * @brief Data used by the client_handler
+  * 
+  */
+typedef struct{
+    Server *server;
+    int s_dial;
+} Driver;
 
 /**
  * @brief  The thread that manages the client retrieves from the socket
@@ -9,8 +19,8 @@
  * @param dial
  * @return void*
  */
-void *handle_client(void *dial);
+void *client_handler(void *data);
 
-EventType read_event(int s_dial, char **data);
+void read_event(int s_dial, char **data, EventType *event);
 
 #endif /* _DRIVER_H_ */

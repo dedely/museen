@@ -2,10 +2,11 @@
 #include <stdlib.h>
 #include <sys/types.h>
 #include <sys/socket.h>
-#include <netinet/in.h>
+#include <netinet/in.h> //for struct sockaddr_in
 #include <string.h>
 #include <time.h>
 #include <unistd.h>
+#include <fcntl.h> //for non blocking  options
 #include "util.h"
 
 /**
@@ -29,11 +30,36 @@ int create_tcp_server(int port, int clients_max) {
 
     /* create a listening  socket and pass it the (address/port)*/
     s_listen = socket(PF_INET, SOCK_STREAM, 0);
-    setsockopt(s_listen, SOL_SOCKET, SO_REUSEADDR, &so_reuseaddr,
-        sizeof so_reuseaddr);
-    bind(s_listen, (struct sockaddr *)&serv_addr, sizeof serv_addr);
-    listen(s_listen, clients_max); /* define s_listen as a listening socket*/
+    if (s_listen < 0) {
+        perror("Couldn't create socket");
+        exit(EXIT_FAILURE);
+    }
 
+    int r = setsockopt(s_listen, SOL_SOCKET, SO_REUSEADDR, &so_reuseaddr,
+        sizeof so_reuseaddr);
+    if (r < 0) {
+        perror("Couldn't set server socket options");
+        exit(EXIT_FAILURE);
+    }
+
+    r = bind(s_listen, (struct sockaddr *)&serv_addr, sizeof serv_addr);
+    if (r < 0) {
+        perror("Couldn't bind server socket");
+        exit(EXIT_FAILURE);
+    }
+
+    /*Make the server socket nonblocking*/
+    r = fcntl(s_listen, F_SETFL, O_NONBLOCK);
+    if (r < 0) {
+        perror("Couldn't make server socket nonblocking");
+        exit(EXIT_FAILURE);
+    }
+
+    r = listen(s_listen, clients_max); /* define s_listen as a listening socket*/
+    if (r < 0) {
+        perror("Couldn't listen on server socket");
+        exit(EXIT_FAILURE);
+    }
     return s_listen;
 }
 
@@ -46,7 +72,7 @@ PGconn *connect_db() {
     PGconn *conn = PQconnectdb(ONLINE_DB_INFO);
     if (PQstatus(conn) == CONNECTION_BAD) {
         printf("Connexion to database server failed : %s", PQerrorMessage(conn));
-        exit(0);
+        exit(EXIT_FAILURE);
     }
     else if (PQstatus(conn) == CONNECTION_OK) {
         printf("Connected to database server\n");

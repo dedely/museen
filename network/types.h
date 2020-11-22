@@ -73,6 +73,7 @@ typedef enum {
     EVENT_QUERY, /*Client sent a query type*/
     EVENT_DATA, /*Client sent data*/
     EVENT_SPAM, /*Client is flooding the server*/
+    EVENT_BUF_OVERFLOW, /*Buffer overlow*/
     EVENT_TIMEOUT_END /*The client timeout has ended*/
 } EventType;
 

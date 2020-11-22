@@ -16,20 +16,22 @@ ClientStateType timeout_handler();
  * @brief  The thread that manages the client retrieves from the socket
  * what the client tells.
  *
- * @param data Descriptor of the connection socket allowing to dialog with a specific client.
- *             It's a generic type because we're using threads (see pthread_create documentation)
+ * @param param
  * @return void*
  */
-void *handle_client(void *dial) {
-    int stop = 0;
-    int s_dial = *(int *)dial;
+void *client_handler(void *param) {
+    Driver *driver = param;
+    Server *server = driver->server;
+    int s_dial = driver->s_dial;
     char *data = NULL;
     ClientStateType next_state = CLIENT_INIT;
-    EventType event;
+    EventType event = EVENT_CONNECTED;
+
+    int stop = 0;
 
     while (!stop) {
         //Read event
-        event = read_event(s_dial, &data);
+        read_event(s_dial, &data, &event);
 
         /*We use a state machine to handle the client.
         * Code related to specific events is delegated to the corresponding function.
@@ -52,7 +54,7 @@ void *handle_client(void *dial) {
             break;
         case CLIENT_TIMED_OUT:
             if (EVENT_TIMEOUT_END == event) {
-                next_state = timeout_handler(data);
+                next_state = timeout_handler();
             }
             break;
         default:
@@ -66,23 +68,27 @@ void *handle_client(void *dial) {
         }
     }
 
-    free(dial);
+
     close(s_dial);
+    free(driver);
+    decrement_drivers(server);
     return (NULL);
 }
 
 /**
- * @brief  This filter is used to remove the last character in the buffer if it's a newline character.
- *  P.S. : not my cleanest function...
+ * @brief Checks for string buffer overflow by calling strnlen(). If no overflow, removes the last character if it's a '\n'.
+ *
  * @param buf
- * @param size
+ * @return int size of the (new) string of -1 in case of string buffer overflow
  */
-char *filter(char *buf) {
-    int len = strlen(buf);
-    if ((len > 0) && (buf[len - 1] == '\n')) {
-        buf[len - 1] = '\0';
+int filter(char *buf, int max_length) {
+    int length = strnlen(buf, max_length);
+    int valid = (length != max_length);
+    if (valid && (buf[length - 1] == '\n')) {
+        buf[length - 1] = '\0';
+        length--;
     }
-    return buf;
+    return valid ? length : -1;
 }
 
 /**
@@ -93,30 +99,39 @@ char *filter(char *buf) {
  * @param size
  * @return EventType
  */
-EventType read_event(int s_dial, char **data) {
+void read_event(int s_dial, char **data, EventType *event) {
     char buf[BUFFER_SIZE];
-    bzero(buf, BUFFER_SIZE); /*This initializes the buffer*/
+    bzero(buf, BUFFER_SIZE);
 
     int n = read(s_dial, buf, BUFFER_SIZE);
-    EventType event;
+    printf("n = %d\n", n);
+    if (n > 0) {
+        //Check for string buffer overflow
+        int length = filter(buf, BUFFER_SIZE);
+        printf("%d\n", length);
+        if (length != -1) {
+            char *tmp = (char *)realloc(*data, length * sizeof(char));
+            if (tmp == NULL) {
+                perror("Couldn't allocate memory in function read_event.");
+                exit(EXIT_FAILURE);
+            }
+            *data = tmp;
+            strncpy(*data, buf, length);
 
-    if (n != 0) {
-        event = EVENT_CONNECTED;
+            printf("Recieved:[%s]\n", *data);
 
-        strcpy(buf, filter(buf));
-        *data = (char *)realloc(*data, (strlen(buf) + 1) * sizeof(char));
-        strcpy(*data, buf);
-        printf("Recieved:[%s]\n", *data);
 
-        printf("Sending back...\n");
-        write(s_dial, *data, n);
-        //Code pour la lecture à compléter.
+            printf("Sending back...\n");
+            write(s_dial, *data, n);
+            //Code pour la lecture à compléter.
+        }
+        else {
+            *event = EVENT_BUF_OVERFLOW;
+        }
     }
-    else {
-        event = EVENT_QUIT;
-    }
-    bzero(buf, BUFFER_SIZE);
-    return event;
+    else{
+        *event = EVENT_QUIT;
+    }    
 }
 
 /**
