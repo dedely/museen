@@ -86,4 +86,8 @@ typedef enum {
 #define RUN_DB_DEBUG RUN_DB_DEBUG
 };
 
+#define IP_DEFAULT "default"
+
+#define PORT_DEFAULT 42424
+
 #endif /*_TYPE_H_*/

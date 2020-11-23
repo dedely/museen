@@ -2,12 +2,14 @@
 #include <stdlib.h>
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <arpa/inet.h> //for inet_addr()
 #include <netinet/in.h> //for struct sockaddr_in
 #include <string.h>
 #include <time.h>
 #include <unistd.h>
 #include <fcntl.h> //for non blocking  options
 #include "util.h"
+#include "types.h"
 
 /**
  * @brief Create a tcp server object, i.e. a listening socket on the given port with
@@ -17,14 +19,14 @@
  * @param clients_max
  * @return int
  */
-int create_tcp_server(int port, int clients_max) {
+int create_tcp_server(in_addr_t ip, int port, int clients_max) {
     int s_listen;
     int so_reuseaddr = 1;
     struct sockaddr_in serv_addr;
 
     /* define which address/port we're using */
     serv_addr.sin_family = AF_INET;
-    serv_addr.sin_addr.s_addr = htonl(INADDR_ANY); /* accept any incoming message */
+    serv_addr.sin_addr.s_addr = ip; /*ip is now passed as paramater*/
     serv_addr.sin_port = htons(port);
     memset(&serv_addr.sin_zero, 0, sizeof(serv_addr.sin_zero));
 
@@ -93,4 +95,14 @@ char *get_timestamp() {
     strftime(timestamp, 30, "%Y-%m-%d %X", info);
 
     return timestamp;
+}
+
+in_addr_t set_ip(char *ip){
+    in_addr_t s_ip;
+    if(strcmp(ip, IP_DEFAULT) == 0){
+        s_ip = htonl(INADDR_ANY); /* accept any incoming message */
+    }else{
+        s_ip = inet_addr (ip) ;
+    }
+    return s_ip;
 }

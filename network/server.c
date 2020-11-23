@@ -18,7 +18,8 @@
  *  the server running until a shutdown is requested.
  *
  */
-void run() {
+void run(char *ip, int port) {
+    in_addr_t s_ip = set_ip(ip);
     Server *server = malloc(sizeof(Server));
     if (server == NULL) {
         perror("Couldn't allocate memory in function run");
@@ -26,7 +27,7 @@ void run() {
     }
     pthread_t s_tid;
 
-    init_server(SERVER_PORT, server);
+    init_server(s_ip, port, server);
 
     /*We use a thread to run the server in order to keep it running
     * until a shutdown is requested
@@ -55,12 +56,14 @@ void run() {
 
 /**
  * @brief Initializes a Server element. (Does not allocate memory)
- *
- * @param port
- * @param s
+ * 
+ * @param ip 
+ * @param port 
+ * @param s 
  */
-void init_server(int port, Server *s) {
+void init_server(in_addr_t ip, int port, Server *s) {
     s->port = port;
+    s->ip = ip;
     s->drivers_cnt = 0;
     s->shutdown_requested = 0;
     pthread_mutex_init(&s->lock, NULL);
@@ -95,7 +98,10 @@ void *run_server(void *data) {
     pthread_attr_t *thread_attributes;
     pthread_t d_tid;
 
-    s_listen = create_tcp_server(SERVER_PORT, MAX_CLIENTS);
+    in_addr_t s_ip = server->ip;
+    int port = server->port;
+
+    s_listen = create_tcp_server(s_ip, port, MAX_CLIENTS);
 
     /*Create a fd_set with the server socket s_listen
     * so we can do a timed wait for incoming connections
