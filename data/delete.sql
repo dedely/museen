@@ -7,7 +7,6 @@
 
 DROP TABLE artist_preference;
 DROP TABLE artistic_movement_preference;
-DROP TABLE artistic_movement;
 DROP TABLE artwork;
 DROP TABLE artistic_movement;
 DROP TABLE artist;
@@ -18,3 +17,4 @@ DROP TABLE visitor;
 DROP TABLE guided_tour;
 DROP TABLE subscription;
 DROP TABLE pricing;
+DROP TYPE art_type;
