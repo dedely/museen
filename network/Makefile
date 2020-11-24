@@ -16,4 +16,4 @@ museen_tcp_server : driver.o util.o server.o main.o
 	gcc driver.o util.o server.o main.o -o museen_tcp_server -lpthread -lpq
     
 clean :
-	rm -f server *.o
+	rm -f museen_tcp_server *.o
