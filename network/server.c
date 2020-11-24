@@ -149,6 +149,7 @@ void *run_server(void *data) {
                 Driver *driver = malloc(sizeof(Driver));
                 driver->server = server;
                 driver->s_dial = s_dial;
+                driver->ip = inet_ntoa(cli_addr.sin_addr);
 
                 /*Start a detached thread
                 *(detached because no other thread will wait for it to complete)

@@ -3,9 +3,11 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <netinet/in.h>
 #include "driver.h"
 
 #define BUFFER_SIZE 80
+#define DEBUG 1
 
 ClientStateType login_handler(char *data);
 ClientStateType query_handler(char *data);
@@ -21,6 +23,7 @@ ClientStateType timeout_handler();
  */
 void *client_handler(void *param) {
     Driver *driver = param;
+    char *ip = driver->ip;
     Server *server = driver->server;
     int s_dial = driver->s_dial;
     char *data = NULL;
@@ -30,20 +33,19 @@ void *client_handler(void *param) {
     int stop = 0;
 
     while (!stop) {
-        //Read event
-        read_event(s_dial, &data, &event);
+        read_event(s_dial, &data, &event, ip);
 
         /*We use a state machine to handle the client.
         * Code related to specific events is delegated to the corresponding function.
         */
         switch (next_state) {
         case CLIENT_INIT:
-            if (EVENT_AUTH == event) {
+            if (EVENT_DATA == event) {
                 next_state = login_handler(data);
             }
             break;
         case CLIENT_IDLE:
-            if (EVENT_QUERY == event) {
+            if (EVENT_DATA == event) {
                 next_state = query_handler(data);
             }
             break;
@@ -58,16 +60,16 @@ void *client_handler(void *param) {
             }
             break;
         default:
-            /*Add to logs later*/
             break;
         }
-
+        if (EVENT_BUF_OVERFLOW == event) {
+            next_state = CLIENT_INIT;
+        }
         //EVENT_QUIT does not depend of the state
         if (EVENT_QUIT == event) {
             stop = 1;
         }
     }
-
 
     close(s_dial);
     free(driver);
@@ -99,39 +101,39 @@ int filter(char *buf, int max_length) {
  * @param size
  * @return EventType
  */
-void read_event(int s_dial, char **data, EventType *event) {
+void read_event(int s_dial, char **data, EventType *event, char *ip) {
     char buf[BUFFER_SIZE];
     bzero(buf, BUFFER_SIZE);
 
     int n = read(s_dial, buf, BUFFER_SIZE);
-    printf("n = %d\n", n);
     if (n > 0) {
         //Check for string buffer overflow
         int length = filter(buf, BUFFER_SIZE);
-        printf("%d\n", length);
         if (length != -1) {
-            char *tmp = (char *)realloc(*data, length * sizeof(char));
-            if (tmp == NULL) {
+            //Prepare data string
+            free(*data);
+            *data = (char *)malloc(length * sizeof(char));
+            if (*data == NULL) {
                 perror("Couldn't allocate memory in function read_event.");
                 exit(EXIT_FAILURE);
             }
-            *data = tmp;
             strncpy(*data, buf, length);
 
-            printf("Recieved:[%s]\n", *data);
+            //Add it to logs later
+            printf("Recieved:[%s] from %s (client %d)\n", *data, ip, s_dial);
 
-
-            printf("Sending back...\n");
-            write(s_dial, *data, n);
-            //Code pour la lecture à compléter.
+            if (DEBUG) {
+                printf("Sending back...\n");
+                write(s_dial, *data, n);
+            }
         }
         else {
             *event = EVENT_BUF_OVERFLOW;
         }
     }
-    else{
+    else {
         *event = EVENT_QUIT;
-    }    
+    }
 }
 
 /**

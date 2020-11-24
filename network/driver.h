@@ -3,13 +3,14 @@
 #include "types.h"
 #include "server.h"
 
- /**
-  * @brief Data used by the client_handler
-  * 
-  */
-typedef struct{
-    Server *server;
-    int s_dial;
+/**
+ * @brief Data used by the client_handler
+ *
+ */
+typedef struct {
+  Server *server;
+  int s_dial;
+  char *ip;
 } Driver;
 
 /**
@@ -21,6 +22,6 @@ typedef struct{
  */
 void *client_handler(void *data);
 
-void read_event(int s_dial, char **data, EventType *event);
+void read_event(int s_dial, char **data, EventType *event, char *ip);
 
 #endif /* _DRIVER_H_ */
