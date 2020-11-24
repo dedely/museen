@@ -22,6 +22,6 @@ typedef struct {
  */
 void *client_handler(void *data);
 
-void read_event(int s_dial, char **data, EventType *event, char *ip);
+void read_event(int *s_dial, char **data, EventType *event, char *ip);
 
 #endif /* _DRIVER_H_ */

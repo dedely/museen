@@ -7,12 +7,13 @@
 #include "driver.h"
 
 #define BUFFER_SIZE 80
-#define DEBUG 1
+#define DEBUG 0
+#define DEBUG_KEY "museen-artwork-secrets-exposed"
 
-ClientStateType login_handler(char *data);
-ClientStateType query_handler(char *data);
-ClientStateType data_handler(char *data);
-ClientStateType timeout_handler();
+ClientStateType login_handler(char *data, int *s_dial, char *ip);
+ClientStateType query_handler(char *data, int *s_dial);
+ClientStateType data_handler(char *data, int *s_dial);
+ClientStateType timeout_handler(int *s_dial);
 
 /**
  * @brief  The thread that manages the client retrieves from the socket
@@ -25,7 +26,7 @@ void *client_handler(void *param) {
     Driver *driver = param;
     char *ip = driver->ip;
     Server *server = driver->server;
-    int s_dial = driver->s_dial;
+    int *s_dial = &driver->s_dial;
     char *data = NULL;
     ClientStateType next_state = CLIENT_INIT;
     EventType event = EVENT_CONNECTED;
@@ -41,22 +42,22 @@ void *client_handler(void *param) {
         switch (next_state) {
         case CLIENT_INIT:
             if (EVENT_DATA == event) {
-                next_state = login_handler(data);
+                next_state = login_handler(data, s_dial, ip);
             }
             break;
         case CLIENT_IDLE:
             if (EVENT_DATA == event) {
-                next_state = query_handler(data);
+                next_state = query_handler(data, s_dial);
             }
             break;
         case CLIENT_MADE_QUERY:
             if (EVENT_DATA == event) {
-                next_state = data_handler(data);
+                next_state = data_handler(data, s_dial);
             }
             break;
         case CLIENT_TIMED_OUT:
             if (EVENT_TIMEOUT_END == event) {
-                next_state = timeout_handler();
+                next_state = timeout_handler(s_dial);
             }
             break;
         default:
@@ -71,7 +72,7 @@ void *client_handler(void *param) {
         }
     }
 
-    close(s_dial);
+    close(*s_dial);
     free(driver);
     decrement_drivers(server);
     return (NULL);
@@ -101,11 +102,11 @@ int filter(char *buf, int max_length) {
  * @param size
  * @return EventType
  */
-void read_event(int s_dial, char **data, EventType *event, char *ip) {
+void read_event(int *s_dial, char **data, EventType *event, char *ip) {
     char buf[BUFFER_SIZE];
     bzero(buf, BUFFER_SIZE);
 
-    int n = read(s_dial, buf, BUFFER_SIZE);
+    int n = read(*s_dial, buf, BUFFER_SIZE);
     if (n > 0) {
         //Check for string buffer overflow
         int length = filter(buf, BUFFER_SIZE);
@@ -118,13 +119,13 @@ void read_event(int s_dial, char **data, EventType *event, char *ip) {
                 exit(EXIT_FAILURE);
             }
             strncpy(*data, buf, length);
-
+            *event = EVENT_DATA;
             //Add it to logs later
-            printf("Recieved:[%s] from %s (client %d)\n", *data, ip, s_dial);
+            printf("Recieved:[%s] from %s (client %d)\n", *data, ip, *s_dial);
 
             if (DEBUG) {
                 printf("Sending back...\n");
-                write(s_dial, *data, n);
+                write(*s_dial, *data, n);
             }
         }
         else {
@@ -136,13 +137,40 @@ void read_event(int s_dial, char **data, EventType *event, char *ip) {
     }
 }
 
+int query_login(char *data) {
+    int result = 0;
+    if (strcmp(data, DEBUG_KEY) == 0) {
+        result = 1;
+    }
+    return result;
+}
+
 /**
- * @brief
+ * @brief This function queries the database server to check if the login key provided by the client is valid.
  *
  * @return ClientStateType
  */
-ClientStateType login_handler(char *data) {
-    return CLIENT_IDLE;
+ClientStateType login_handler(char *data, int *s_dial, char *ip) {
+    ClientStateType next_state = CLIENT_INIT;
+    int n;
+    int status = CONN_FAILED_NOT_PREM;
+    char reply[5];
+    bzero(reply, 5);
+
+    if (query_login(data) == 1) {
+        next_state = CLIENT_IDLE;
+        status = CONN_AUTH_OK;
+        printf("%s (client %d) is logged in\n", ip, *s_dial);
+    }
+    else {
+        status = CONN_FAILED_UKN;
+        printf("%s (client %d) was not logged in\n", ip, *s_dial);
+    }
+
+    sprintf(reply, "%d", status);
+    n = strnlen(reply, 5) + 1; //+1 for the '\0' character
+    write(*s_dial, reply, n);
+    return next_state;
 }
 
 /**
@@ -150,7 +178,7 @@ ClientStateType login_handler(char *data) {
  *
  * @return ClientStateType
  */
-ClientStateType query_handler(char *data) {
+ClientStateType query_handler(char *data, int *s_dial) {
     return CLIENT_MADE_QUERY;
 }
 
@@ -159,7 +187,7 @@ ClientStateType query_handler(char *data) {
  *
  * @return ClientStateType
  */
-ClientStateType data_handler(char *data) {
+ClientStateType data_handler(char *data, int *s_dial) {
     return CLIENT_IDLE;
 }
 
@@ -168,6 +196,6 @@ ClientStateType data_handler(char *data) {
  *
  * @return ClientStateType
  */
-ClientStateType timeout_handler() {
+ClientStateType timeout_handler(int *s_dial) {
     return CLIENT_IDLE;
 }
