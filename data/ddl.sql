@@ -18,7 +18,7 @@ CREATE TABLE subscription
 (
     subscription_id       CHAR(3),
     subscription_duration INT     NOT NULL,
-    subscription_renewed  BOOLEAN NOT NULL DEFAULT TRUE,
+    subscription_renewed  BOOLEAN NOT NULL,
     CONSTRAINT subscription_pk PRIMARY KEY (subscription_id),
     CONSTRAINT subscription_fk FOREIGN KEY (subscription_id) REFERENCES pricing (pricing_id)
 );
@@ -27,7 +27,7 @@ CREATE TABLE guided_tour
 (
     gt_id         CHAR(3),
     gt_guide_name VARCHAR(15) NOT NULL,
-    gt_date       DATE        NOT NULL,
+    gt_date       CHAR(2)        NOT NULL,
     gt_hour       TIME        NOT NULL,
     gt_place      VARCHAR(15) NOT NULL,
     CONSTRAINT gt_pk PRIMARY KEY (gt_id),
