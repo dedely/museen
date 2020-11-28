@@ -9,6 +9,7 @@
 #include "util.h"
 #include "server.h"
 #include "driver.h"
+#include "query.h"
 
 #define MAX_CLIENTS 5
 #define TIMEOUT 1

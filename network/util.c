@@ -2,8 +2,6 @@
 #include <stdlib.h>
 #include <sys/types.h>
 #include <sys/socket.h>
-#include <arpa/inet.h> //for inet_addr()
-#include <netinet/in.h> //for struct sockaddr_in
 #include <string.h>
 #include <time.h>
 #include <unistd.h>
@@ -65,22 +63,6 @@ int create_tcp_server(in_addr_t ip, int port, int clients_max) {
     return s_listen;
 }
 
-/**
- * @brief Connects to the database server in a synchronous(blocking) fashion.
- *
- * @return PGconn*
- */
-PGconn *connect_db() {
-    PGconn *conn = PQconnectdb(ONLINE_DB_INFO);
-    if (PQstatus(conn) == CONNECTION_BAD) {
-        printf("Connexion to database server failed : %s", PQerrorMessage(conn));
-        exit(EXIT_FAILURE);
-    }
-    else if (PQstatus(conn) == CONNECTION_OK) {
-        printf("Connected to database server\n");
-    }
-    return conn;
-}
 
 char *get_timestamp() {
     time_t rawtime;

@@ -1,5 +1,26 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include "query.h"
+#include "types.h"
+#include "util.h"
+
+/**
+ * @brief Connects to the database server in a synchronous(blocking) fashion.
+ *
+ * @return PGconn*
+ */
+PGconn *connect_db() {
+    PGconn *conn = PQconnectdb(ONLINE_DB_INFO);
+    if (PQstatus(conn) == CONNECTION_BAD) {
+        printf("Connexion to database server failed : %s", PQerrorMessage(conn));
+        exit(EXIT_FAILURE);
+    }
+    else if (PQstatus(conn) == CONNECTION_OK) {
+        printf("Connected to database server\n");
+    }
+    return conn;
+}
 
 void insert_test(PGconn *conn) {
     printf("Running INSERT INTO query test...\n");

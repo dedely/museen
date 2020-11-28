@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <netinet/in.h>
 #include "driver.h"
+#include "query.h"
 #include "util.h"
 
 ClientStateType login_handler(char *data, int *s_dial, char *ip, PGconn *conn);

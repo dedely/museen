@@ -3,3 +3,4 @@ network/util.o
 network/server.o
 network/main.o
 network/driver.o
+network/query.o
