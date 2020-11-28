@@ -146,7 +146,7 @@ VALUES ('G001', 'Gilles', 'Lu', '09:00', 'Hall');
 
 INSERT INTO visitor(visitor_id, visitor_first_name, visitor_last_name, visitor_birthdate, visitor_password_hash,
                     visitor_authkey_hash)
-VALUES ('jtest', 'Jean', 'Test', '2020-01-01', 'museen', 'museen-artwork-secrets-exposed');
+VALUES ('jtest', 'Jean', 'Test', '2020-01-01', 'museen', '8af763ee3a7549af94f472543bff710e09db9b217ab8e35a6c542db8e6330b0d');
 
 INSERT INTO artistic_movement(artistic_movement_name, artistic_movement_lead_artist) VALUES
 ('Surréalisme', 'André Breton');
