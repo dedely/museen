@@ -43,7 +43,8 @@ CREATE TABLE visitor
     visitor_birthdate     DATE                NOT NULL,
     visitor_password_hash VARCHAR(255)        NOT NULL,
     visitor_authkey_hash  VARCHAR(255) UNIQUE NOT NULL,
-    CONSTRAINT visitor_pk PRIMARY KEY (visitor_id)
+    CONSTRAINT visitor_pk PRIMARY KEY (visitor_id),
+    CONSTRAINT visitor_id_min_length CHECK (length(visitor_id) >= 4)
 );
 
 CREATE TABLE is_paying
@@ -103,7 +104,7 @@ CREATE TABLE artwork
     artwork_title       VARCHAR(30) NOT NULL,
     artwork_type        art_type    NOT NULL,
     artwork_artist      INTEGER     NOT NULL,
-    artwork_date        VARCHAR(10) NOT NULL, --Not a DATE type
+    artwork_date        VARCHAR(10) NOT NULL,
     artwork_movement_id INTEGER     NOT NULL,
     artwork_popularity  INTEGER,
     artwork_location    INTEGER     NOT NULL,
