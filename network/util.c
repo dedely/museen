@@ -69,7 +69,7 @@ char *get_timestamp() {
     struct tm *info;
     char *timestamp = (char *)malloc(30 * sizeof(char));
     if (timestamp == NULL) {
-        perror("Memory allocation error in function get_timestamp()\n");
+        perror("Couldn't allocate memory in function get_timestamp()\n");
         exit(0);
     }
     time(&rawtime);
@@ -79,12 +79,22 @@ char *get_timestamp() {
     return timestamp;
 }
 
-in_addr_t set_ip(char *ip){
+in_addr_t set_ip(char *ip) {
     in_addr_t s_ip;
-    if(strcmp(ip, IP_DEFAULT) == 0){
+    if (strcmp(ip, IP_DEFAULT) == 0) {
         s_ip = htonl(INADDR_ANY); /* accept any incoming message */
-    }else{
-        s_ip = inet_addr (ip) ;
+    }    
+else {
+        s_ip = inet_addr(ip);
     }
     return s_ip;
+}
+
+char *malloc_str(int length) {
+    char *str = (char *)malloc(length + 1 * sizeof(char));
+    if (str == NULL) {
+        perror("Couldn't allocate memory\n");
+        exit(EXIT_FAILURE);
+    }
+    return str;
 }

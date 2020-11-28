@@ -9,5 +9,5 @@
 int create_tcp_server(in_addr_t ip, int port, int clients_max);
 char *get_timestamp();
 in_addr_t set_ip(char *ip);
-
+char *malloc_str(int length);
 #endif /* _UTIL_H_ */

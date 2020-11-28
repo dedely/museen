@@ -77,7 +77,7 @@ void *client_handler(void *param) {
 }
 
 /**
- * @brief Checks for string buffer overflow by calling strnlen(). If no overflow, removes the last character if it's a '\n'.
+ * @brief Checks for string buffer overflow by calling strnlen(). If no overflow, removes the last character if it's a '\n', or '\r\n'
  *
  * @param buf
  * @return int size of the (new) string of -1 in case of string buffer overflow
@@ -86,6 +86,10 @@ int filter(char *buf, int max_length) {
     int length = strnlen(buf, max_length);
     int valid = (length != max_length);
     if (valid && (buf[length - 1] == '\n')) {
+        buf[length - 1] = '\0';
+        length--;
+    }
+    if (valid && (buf[length - 1] == '\r')) { /*Some terminals add '\r\n'*/
         buf[length - 1] = '\0';
         length--;
     }
@@ -108,15 +112,16 @@ void read_event(int *s_dial, char **data, EventType *event, char *ip) {
     if (n > 0) {
         //Check for string buffer overflow
         int length = filter(buf, BUFFER_SIZE);
+        printf("length = %d\n", length);
         if (length != -1) {
             //Prepare data string
             free(*data);
-            *data = (char *)malloc(length * sizeof(char));
+            *data = (char *)malloc(length + 1 * sizeof(char));
             if (*data == NULL) {
                 perror("Couldn't allocate memory in function read_event.");
                 exit(EXIT_FAILURE);
             }
-            strncpy(*data, buf, length);
+            strncpy(*data, buf, length + 1);
             *event = EVENT_DATA;
             //Add it to logs later
             printf("Recieved:[%s] from %s (client %d)\n", *data, ip, *s_dial);
@@ -135,14 +140,6 @@ void read_event(int *s_dial, char **data, EventType *event, char *ip) {
     }
 }
 
-int query_login(char *data) {
-    int result = 0;
-    if (strcmp(data, DEBUG_KEY) == 0) {
-        result = 1;
-    }
-    return result;
-}
-
 /**
  * @brief This function queries the database server to check if the login key provided by the client is valid.
  *
@@ -152,10 +149,10 @@ ClientStateType login_handler(char *data, int *s_dial, char *ip, PGconn *conn) {
     ClientStateType next_state = CLIENT_INIT;
     int n;
     int status = CONN_FAILED_NOT_PREM;
-    char reply[5];
+    char reply[ID_BUFFER_SIZE];
     bzero(reply, 5);
-
-    if (query_login(data) == 1) {
+    strncat(reply, query_login(conn, data), ID_BUFFER_SIZE);
+    if (strlen(reply) > 0) {
         next_state = CLIENT_IDLE;
         status = CONN_AUTH_OK;
         printf("%s (client %d) is logged in\n", ip, *s_dial);
