@@ -1,12 +1,11 @@
 package MuseenClient;
 
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
-
-
-public class Secure {
+public class UserManager {
 	
 	public static String securize(String authKey) {
 		System.out.println(authKey);
@@ -36,7 +35,23 @@ public class Secure {
 			e.printStackTrace();
 		}
 		return password;
-		
-		
- 	}
+	}
+	
+	public static void login(String authKey) {
+		String answer;
+		String hashedKey = UserManager.securize(authKey);
+		String code = "LI";
+			
+		try {
+			answer = ClientTCP.send(code+";"+hashedKey);
+			User user = new User(answer, authKey, "nowhere");
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	
+					
+	}
+	
+	
 }

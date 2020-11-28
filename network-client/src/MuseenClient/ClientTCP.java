@@ -8,11 +8,13 @@ import java.net.Socket ;
 import java.net.UnknownHostException ;
 
 public class ClientTCP {
+	static Socket socket;
+	static PrintWriter flux_sortie;
+	static BufferedReader flux_entree;
 	
-	public static void main (String argv []) throws IOException {
-        Socket socket = null ;
-        PrintWriter flux_sortie = null ;
-        BufferedReader flux_entree = null ;
+	
+	
+	public static void connect (){
         String definedIP ;
         String message ;
         String reponse ;
@@ -32,13 +34,14 @@ public class ClientTCP {
             System.err.println ("Hote inconnu") ;
             System.exit (1) ;
         }
+        catch (IOException e) {
+        	System.err.println ("IOException");
+        	System.exit(1) ;
+        }
         
-        //Lancement de l'interface graphique
-	}
+ 	}
 	
-	public static String send (String message) {
-		PrintWriter flux_sortie = null ;
-        BufferedReader flux_entree = null ;
+	public static String send (String message) throws IOException {
 		final String separateur = ";";
 		String sepMsg[] = message.split(separateur);
 		String code = sepMsg[0];
@@ -81,8 +84,8 @@ public class ClientTCP {
 
 	}
 	
-	public static void disconnect() {
-		socket.close()
+	public static void disconnect() throws IOException {
+		socket.close();
 	}
 	
 }
