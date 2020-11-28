@@ -2,6 +2,8 @@
 #define _SERVER_H_
 #include <pthread.h>
 #include <netinet/in.h>
+#include </usr/include/postgresql/libpq-fe.h>
+
 
 /**
  * @brief Server data structure to keep track of the active drivers
@@ -13,6 +15,7 @@ typedef struct {
     int port;
     int shutdown_requested;
     in_addr_t ip;
+    PGconn *database_connection;
     pthread_mutex_t lock;
     pthread_cond_t cond;
 } Server;

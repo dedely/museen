@@ -67,6 +67,7 @@ void init_server(in_addr_t ip, int port, Server *s) {
     s->ip = ip;
     s->drivers_cnt = 0;
     s->shutdown_requested = 0;
+    s->database_connection = connect_db();
     pthread_mutex_init(&s->lock, NULL);
     pthread_cond_init(&s->cond, NULL);
 }
@@ -101,7 +102,7 @@ void *run_server(void *data) {
 
     in_addr_t s_ip = server->ip;
     int port = server->port;
-
+    PGconn *conn = server->database_connection;
     s_listen = create_tcp_server(s_ip, port, MAX_CLIENTS);
 
     /*Create a fd_set with the server socket s_listen
@@ -118,7 +119,7 @@ void *run_server(void *data) {
 
         //We only wait for the server socket
         readfds = fds;
-
+        //printf("%d connected clients \n", server->drivers_cnt);
         // Preemptively increment the drivers count
         increment_drivers(server);
 

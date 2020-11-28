@@ -26,11 +26,11 @@ void *client_handler(void *param) {
     Driver *driver = param;
     char *ip = driver->ip;
     Server *server = driver->server;
+    PGconn *conn = server->database_connection;
     int *s_dial = &driver->s_dial;
     char *data = NULL;
     ClientStateType next_state = CLIENT_INIT;
     EventType event = EVENT_CONNECTED;
-    PGconn *conn = connect_db();
     int stop = 0;
 
     while (!stop) {

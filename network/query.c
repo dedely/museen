@@ -27,7 +27,7 @@ PGconn *connect_db() {
 char *query_login(PGconn *conn, char *auth_key) {
     char *id = malloc_str(ID_BUFFER_SIZE);
     bzero(id, ID_BUFFER_SIZE);
-    char query[250] = "SELECT visitor_id FROM visitor WHERE visitor_authkey_hash = \'";
+    char query[Q_MAX_SIZE] = "SELECT visitor_id FROM visitor WHERE visitor_authkey_hash = \'";
     strncat(query, auth_key, Q_MAX_SIZE - (strlen(query) + 1));
     strncat(query, "\';", Q_MAX_SIZE - (strlen(query) + 1));
     printf("%s\n", query);
