@@ -5,6 +5,8 @@
 #include "types.h"
 #include "util.h"
 
+#define SEPARATOR ";"
+
 /**
  * @brief Connects to the database server in a synchronous(blocking) fashion.
  *
@@ -41,6 +43,11 @@ char *query_login(PGconn *conn, char *auth_key) {
         printf("result = %s\n", id);
     }
     return id;
+}
+
+
+void store_position(PGconn *conn, char *data, int length){
+    
 }
 
 void insert_test(PGconn *conn) {

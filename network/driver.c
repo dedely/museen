@@ -8,6 +8,8 @@
 #include "query.h"
 #include "util.h"
 
+void read_event(int *s_dial, char **data, EventType *event, char *ip);
+
 ClientStateType login_handler(char *data, int *s_dial, char *ip, PGconn *conn);
 ClientStateType query_handler(char *data, int *s_dial, char *ip, PGconn *conn);
 ClientStateType data_handler(char *data, int *s_dial, char *ip, PGconn *conn);
@@ -116,11 +118,7 @@ void read_event(int *s_dial, char **data, EventType *event, char *ip) {
         if (length != -1) {
             //Prepare data string
             free(*data);
-            *data = (char *)malloc(length + 1 * sizeof(char));
-            if (*data == NULL) {
-                perror("Couldn't allocate memory in function read_event.");
-                exit(EXIT_FAILURE);
-            }
+            *data = malloc_str(length);
             strncpy(*data, buf, length + 1);
             *event = EVENT_DATA;
             //Add it to logs later
@@ -150,7 +148,7 @@ ClientStateType login_handler(char *data, int *s_dial, char *ip, PGconn *conn) {
     int n;
     int status = CONN_FAILED_NOT_PREM;
     char reply[ID_BUFFER_SIZE];
-    bzero(reply, 5);
+    bzero(reply, ID_BUFFER_SIZE);
     strncat(reply, query_login(conn, data), ID_BUFFER_SIZE);
     if (strlen(reply) > 0) {
         next_state = CLIENT_IDLE;

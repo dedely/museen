@@ -63,7 +63,11 @@ int create_tcp_server(in_addr_t ip, int port, int clients_max) {
     return s_listen;
 }
 
-
+/**
+ * @brief Get the current timestamp
+ * 
+ * @return char* 
+ */
 char *get_timestamp() {
     time_t rawtime;
     struct tm *info;
@@ -79,13 +83,25 @@ char *get_timestamp() {
     return timestamp;
 }
 
+/**
+ * @brief Default setting : listen on all available ips
+ * 
+ * @param ip 
+ * @return in_addr_t 
+ */
 in_addr_t set_ip(char *ip) {
     in_addr_t s_ip;
     if (strcmp(ip, IP_DEFAULT) == 0) {
         s_ip = htonl(INADDR_ANY); /* accept any incoming message */
-    }    
-else {
-        s_ip = inet_addr(ip);
+    }
+    else {
+        int r = inet_pton(AF_INET, ip, &s_ip);
+        if(r != 1){
+            s_ip = htonl(INADDR_ANY);
+            printf("Incorrect ip format [%s], using default settings instead...\n", ip);
+        }else{
+            printf("Provided ip is in the correct format.\n");
+        }
     }
     return s_ip;
 }

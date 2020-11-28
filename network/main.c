@@ -28,6 +28,8 @@ int main(int argc, char *argv[]) {
       break;
     case 'i':
       ip = optarg;
+      printf("%s\n", ip);
+      break;
     case 'p':
       //No checks are performed on the port, if a wrong port or format is given
       //Program will fail.
