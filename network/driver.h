@@ -2,6 +2,8 @@
 #define _DRIVER_H_
 #include "types.h"
 #include "server.h"
+#define BUFFER_SIZE 80
+#define DEBUG 0
 
 /**
  * @brief Data used by the client_handler

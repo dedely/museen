@@ -89,5 +89,6 @@ typedef enum {
 #define IP_DEFAULT "default"
 
 #define PORT_DEFAULT 42424
+#define DEBUG_KEY "museen-artwork-secrets-exposed"
 
 #endif /*_TYPE_H_*/

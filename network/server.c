@@ -56,10 +56,10 @@ void run(char *ip, int port) {
 
 /**
  * @brief Initializes a Server element. (Does not allocate memory)
- * 
- * @param ip 
- * @param port 
- * @param s 
+ *
+ * @param ip
+ * @param port
+ * @param s
  */
 void init_server(in_addr_t ip, int port, Server *s) {
     s->port = port;
@@ -184,20 +184,8 @@ void *run_server(void *data) {
 void run_debug() {
     PGconn *conn = connect_db();
 
-    //Sample insert query test: 
-    printf("Running INSERT INTO query test...\n");
-    char query[300] = "INSERT INTO \"public\".\"connection\" (name, time) VALUES(\'dedely\', \'";
-    char *timestamp = get_timestamp();
-    printf("%s\n", timestamp);
-    strcat(query, timestamp);
-    strcat(query, "\');");
-    PGresult *result;
-    result = PQexec(conn, query);
-    ExecStatusType resultStatus;
-    resultStatus = PQresultStatus(result);
-
-    printf("%s\n", PQresStatus(resultStatus));
-    printf("%s\n", PQresultErrorMessage(result));
+    insert_test(conn);
+    auth_test(conn);
 
     PQfinish(conn);
 }

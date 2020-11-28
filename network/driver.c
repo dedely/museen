@@ -5,14 +5,11 @@
 #include <stdio.h>
 #include <netinet/in.h>
 #include "driver.h"
+#include "util.h"
 
-#define BUFFER_SIZE 80
-#define DEBUG 0
-#define DEBUG_KEY "museen-artwork-secrets-exposed"
-
-ClientStateType login_handler(char *data, int *s_dial, char *ip);
-ClientStateType query_handler(char *data, int *s_dial);
-ClientStateType data_handler(char *data, int *s_dial);
+ClientStateType login_handler(char *data, int *s_dial, char *ip, PGconn *conn);
+ClientStateType query_handler(char *data, int *s_dial, char *ip, PGconn *conn);
+ClientStateType data_handler(char *data, int *s_dial, char *ip, PGconn *conn);
 ClientStateType timeout_handler(int *s_dial);
 
 /**
@@ -30,7 +27,7 @@ void *client_handler(void *param) {
     char *data = NULL;
     ClientStateType next_state = CLIENT_INIT;
     EventType event = EVENT_CONNECTED;
-
+    PGconn *conn = connect_db();
     int stop = 0;
 
     while (!stop) {
@@ -42,17 +39,17 @@ void *client_handler(void *param) {
         switch (next_state) {
         case CLIENT_INIT:
             if (EVENT_DATA == event) {
-                next_state = login_handler(data, s_dial, ip);
+                next_state = login_handler(data, s_dial, ip, conn);
             }
             break;
         case CLIENT_IDLE:
             if (EVENT_DATA == event) {
-                next_state = query_handler(data, s_dial);
+                next_state = query_handler(data, s_dial, ip, conn);
             }
             break;
         case CLIENT_MADE_QUERY:
             if (EVENT_DATA == event) {
-                next_state = data_handler(data, s_dial);
+                next_state = data_handler(data, s_dial, ip, conn);
             }
             break;
         case CLIENT_TIMED_OUT:
@@ -150,7 +147,7 @@ int query_login(char *data) {
  *
  * @return ClientStateType
  */
-ClientStateType login_handler(char *data, int *s_dial, char *ip) {
+ClientStateType login_handler(char *data, int *s_dial, char *ip, PGconn *conn) {
     ClientStateType next_state = CLIENT_INIT;
     int n;
     int status = CONN_FAILED_NOT_PREM;
@@ -178,7 +175,7 @@ ClientStateType login_handler(char *data, int *s_dial, char *ip) {
  *
  * @return ClientStateType
  */
-ClientStateType query_handler(char *data, int *s_dial) {
+ClientStateType query_handler(char *data, int *s_dial, char *ip, PGconn *conn) {
     return CLIENT_MADE_QUERY;
 }
 
@@ -187,7 +184,7 @@ ClientStateType query_handler(char *data, int *s_dial) {
  *
  * @return ClientStateType
  */
-ClientStateType data_handler(char *data, int *s_dial) {
+ClientStateType data_handler(char *data, int *s_dial, char *ip, PGconn *conn) {
     return CLIENT_IDLE;
 }
 
