@@ -157,3 +157,9 @@ VALUES ('René Magritte', '1898-11-21', '1967-08-15', 1,
 INSERT INTO artwork(artwork_title, artwork_type, artwork_artist, artwork_date, artwork_movement_id,
                     artwork_location)
 VALUES ('La Trahison des images', 'Tableau', 1, '1928–1929', 1, 1);
+INSERT INTO location (loc_room_name)
+VALUES ('Grande salle'),
+       ('Amphithéâtre'),
+       ('Hall Napoléon'),
+       ('Pyramide'),
+       ('Galerie Médicis');
