@@ -114,7 +114,6 @@ void read_event(int *s_dial, char **data, EventType *event, char *ip) {
     if (n > 0) {
         //Check for string buffer overflow
         int length = filter(buf, BUFFER_SIZE);
-        printf("length = %d\n", length);
         if (length == -1) {
             *event = EVENT_BUF_OVERFLOW;
         }
@@ -147,7 +146,7 @@ ClientStateType login_handler(char *data, int *s_dial, char *ip, PGconn *conn) {
     ClientStateType next_state = CLIENT_INIT;
     int n;
     int status = CONN_FAILED_NOT_PREM;
-    int length = ID_SIZE + 4;
+    int length = ID_SIZE + 5;
     char id[ID_SIZE];
     char reply[length];
     bzero(id, ID_SIZE);
@@ -156,18 +155,18 @@ ClientStateType login_handler(char *data, int *s_dial, char *ip, PGconn *conn) {
     if (strlen(id) > 0) {
         next_state = CLIENT_IDLE;
         status = CONN_AUTH_OK;
+        sprintf(reply, "%d", status);
+        strncat(reply, SEPARATOR, 2);
+        strncat(reply, id, ID_SIZE);
         printf("%s (client %d) is logged in\n", ip, *s_dial);
     }
     else {
         status = CONN_FAILED_UKN;
+        sprintf(reply, "%d", status);
         printf("%s (client %d) was not logged in\n", ip, *s_dial);
     }
-    
-    sprintf(reply, "%d", status);
-    strncat(reply, SEPARATOR, 2);
-    strncat(reply, id, ID_SIZE);
-    //test
-    strcat(reply,"\n");
+    //Java client uses readline() so we add '\n' at the end of our message.
+    strcat(reply, "\n");
 
     n = strlen(reply) + 1; //+1 for the '\0' character
     write(*s_dial, reply, n);
