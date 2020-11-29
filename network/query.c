@@ -5,8 +5,6 @@
 #include "types.h"
 #include "util.h"
 
-#define SEPARATOR ";"
-
 /**
  * @brief Connects to the database server in a synchronous(blocking) fashion.
  *
@@ -25,8 +23,8 @@ PGconn *connect_db() {
 }
 
 char *query_login(PGconn *conn, char *auth_key) {
-    char *id = malloc_str(ID_BUFFER_SIZE);
-    bzero(id, ID_BUFFER_SIZE);
+    char *id = malloc_str(ID_SIZE);
+    bzero(id, ID_SIZE);
     char query[Q_MAX_SIZE] = "SELECT visitor_id FROM visitor WHERE visitor_authkey_hash = \'";
     strncat(query, auth_key, Q_MAX_SIZE - (strlen(query) + 1));
     strncat(query, "\';", Q_MAX_SIZE - (strlen(query) + 1));
@@ -39,7 +37,7 @@ char *query_login(PGconn *conn, char *auth_key) {
     printf("%s\n", PQresStatus(resultStatus));
     printf("%s\n", PQresultErrorMessage(result));
     if ((resultStatus == PGRES_TUPLES_OK) && PQntuples(result) == 1) {
-        strncat(id, PQgetvalue(result, 0, 0), ID_BUFFER_SIZE);
+        strncat(id, PQgetvalue(result, 0, 0), ID_SIZE);
         printf("result = %s\n", id);
     }
     return id;
@@ -47,7 +45,9 @@ char *query_login(PGconn *conn, char *auth_key) {
 
 
 void store_position(PGconn *conn, char *data, int length){
-    
+    char *fields[4];
+    int i = 0;
+    char *tmp;
 }
 
 void insert_test(PGconn *conn) {
@@ -66,7 +66,6 @@ void insert_test(PGconn *conn) {
 
     printf("%s\n", PQresStatus(resultStatus));
     printf("%s\n", PQresultErrorMessage(result));
-
 }
 
 void auth_test(PGconn *conn) {

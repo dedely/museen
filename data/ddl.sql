@@ -30,7 +30,6 @@ CREATE TABLE guided_tour
     gt_guide_name VARCHAR(15) NOT NULL,
     gt_day        CHAR(2)     NOT NULL,
     gt_hour       TIME        NOT NULL,
-    gt_place      VARCHAR(15) NOT NULL,
     CONSTRAINT gt_pk PRIMARY KEY (gt_id),
     CONSTRAINT gt_id_fk FOREIGN KEY (gt_id) REFERENCES pricing (pricing_id)
 );

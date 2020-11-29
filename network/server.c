@@ -180,6 +180,7 @@ void *run_server(void *data) {
     }
 
     close(s_listen);
+    PQfinish(conn);
     return (NULL);
 }
 

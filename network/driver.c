@@ -115,7 +115,10 @@ void read_event(int *s_dial, char **data, EventType *event, char *ip) {
         //Check for string buffer overflow
         int length = filter(buf, BUFFER_SIZE);
         printf("length = %d\n", length);
-        if (length != -1) {
+        if (length == -1) {
+            *event = EVENT_BUF_OVERFLOW;
+        }
+        else {
             //Prepare data string
             free(*data);
             *data = malloc_str(length);
@@ -128,9 +131,6 @@ void read_event(int *s_dial, char **data, EventType *event, char *ip) {
                 printf("Sending back...\n");
                 write(*s_dial, *data, n);
             }
-        }
-        else {
-            *event = EVENT_BUF_OVERFLOW;
         }
     }
     else {
@@ -147,10 +147,13 @@ ClientStateType login_handler(char *data, int *s_dial, char *ip, PGconn *conn) {
     ClientStateType next_state = CLIENT_INIT;
     int n;
     int status = CONN_FAILED_NOT_PREM;
-    char reply[ID_BUFFER_SIZE];
-    bzero(reply, ID_BUFFER_SIZE);
-    strncat(reply, query_login(conn, data), ID_BUFFER_SIZE);
-    if (strlen(reply) > 0) {
+    int length = ID_SIZE + 4;
+    char id[ID_SIZE];
+    char reply[length];
+    bzero(id, ID_SIZE);
+    bzero(reply, length);
+    strncat(id, query_login(conn, data), ID_SIZE);
+    if (strlen(id) > 0) {
         next_state = CLIENT_IDLE;
         status = CONN_AUTH_OK;
         printf("%s (client %d) is logged in\n", ip, *s_dial);
@@ -159,9 +162,14 @@ ClientStateType login_handler(char *data, int *s_dial, char *ip, PGconn *conn) {
         status = CONN_FAILED_UKN;
         printf("%s (client %d) was not logged in\n", ip, *s_dial);
     }
-
+    
     sprintf(reply, "%d", status);
-    n = strnlen(reply, 5) + 1; //+1 for the '\0' character
+    strncat(reply, SEPARATOR, 2);
+    strncat(reply, id, ID_SIZE);
+    //test
+    strcat(reply,"\n");
+
+    n = strlen(reply) + 1; //+1 for the '\0' character
     write(*s_dial, reply, n);
     return next_state;
 }
