@@ -8,6 +8,8 @@
 #include <fcntl.h> //for non blocking  options
 #include "util.h"
 
+#define INFO_SIZE 30
+
 /**
  * @brief Create a tcp server object, i.e. a listening socket on the given port with
  *  a maximum number clients_max of queued clients.
@@ -130,11 +132,22 @@ char *format_log(char *message, char *ip, LogSeverityType severity) {
 
 /**
  * @brief Appends str to dest
- * 
- * @param dest 
- * @param str 
+ *
+ * @param dest
+ * @param str
  * @param max_size max size of dest ('\0' included)
  */
 void append_str(char *dest, char *str, int max_size) {
     strncat(dest, str, max_size - (strlen(dest) + 1));
+}
+
+char *format_cli_info(struct sockaddr_in cli_addr) {
+    char *cli_info = malloc_str(INFO_SIZE);
+    char cli_port[10];
+    bzero(cli_port, 10);
+    char *cli_ip = inet_ntoa(cli_addr.sin_addr);
+    sprintf(cli_port, ":%d", ntohs(cli_addr.sin_port));
+    append_str(cli_info, cli_ip, INFO_SIZE);
+    append_str(cli_info, cli_port, INFO_SIZE);
+    return cli_info;
 }

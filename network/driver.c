@@ -222,3 +222,15 @@ ClientStateType data_handler(char *data, int *s_dial, char *cli_info, PGconn *co
 ClientStateType timeout_handler(int *s_dial) {
     return CLIENT_IDLE;
 }
+
+Driver *create_driver(Server *server, int s_dial, char *cli_info) {
+    Driver *driver = (Driver *)malloc(sizeof(Driver));
+    if (driver == NULL) {
+        perror("Couldn't allocate driver memory");
+        exit(EXIT_FAILURE);
+    }
+    driver->server = server;
+    driver->s_dial = s_dial;
+    driver->cli_info = cli_info;
+    return driver;
+}

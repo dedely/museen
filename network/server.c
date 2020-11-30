@@ -22,7 +22,7 @@
  */
 void run(char *ip, int port, char *log_file, char *db_url) {
     in_addr_t s_ip = set_ip(ip);
-    Server *server = malloc(sizeof(Server));
+    Server *server = (Server *)malloc(sizeof(Server));
     if (server == NULL) {
         perror("Couldn't allocate memory in function run");
         exit(EXIT_FAILURE);
@@ -113,9 +113,6 @@ void *run_server(void *data) {
     fd_set fds, readfds;
     struct timeval timeout;
 
-    pthread_attr_t *thread_attributes;
-    pthread_t d_tid;
-
     in_addr_t s_ip = server->ip;
     int port = server->port;
     PGconn *conn = server->database_connection;
@@ -158,15 +155,7 @@ void *run_server(void *data) {
                 }
 
                 //Format client_info as string (ip:port)
-                char cli_info[BUFFER_SIZE];
-                char *cli_ip;
-                char cli_port[10];
-                bzero(cli_info, BUFFER_SIZE);
-                cli_ip = inet_ntoa(cli_addr.sin_addr);
-                bzero(cli_port, 10);
-                sprintf(cli_port, ":%d", ntohs(cli_addr.sin_port));
-                append_str(cli_info, cli_ip, BUFFER_SIZE);
-                append_str(cli_info, cli_port, BUFFER_SIZE);
+                char *cli_info = format_cli_info(cli_addr);
 
                 //write to log file
                 char *tmp = format_log("is connected\n", cli_info, SEVERITY_INFO);
@@ -176,14 +165,13 @@ void *run_server(void *data) {
                 /*Create a Driver element : it gives access to the server thread and
                  *to the correct socket descriptor to the thread that will handle the client)
                  */
-                Driver *driver = malloc(sizeof(Driver));
-                driver->server = server;
-                driver->s_dial = s_dial;
-                driver->cli_info = cli_info;
+                Driver *driver = create_driver(server, s_dial, cli_info);
 
                 /*Start a detached thread
                 *(detached because no other thread will wait for it to complete)
                 */
+                pthread_attr_t *thread_attributes;
+                pthread_t d_tid;
                 thread_attributes = malloc(sizeof * thread_attributes);
                 r = pthread_attr_init(thread_attributes);
                 r = pthread_attr_setdetachstate(thread_attributes, PTHREAD_CREATE_DETACHED);
