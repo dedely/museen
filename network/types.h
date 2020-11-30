@@ -34,14 +34,14 @@ enum ServerReplyType {
 #define REPLY_EMPTY_QUERY REPLY_EMPTY_QUERY 
     REPLY_FORMAT_ERROR = 200, /*Incorrect  data format*/
 #define REPLY_FORMAT_ERROR REPLY_FORMAT_ERROR
-    REPLY_FORMAT_OK = 210, /*Client query is in the correct format and the server 
+    REPLY_FORMAT_OK = 210, /*Client query is in the correct format and the server
                             is ready to recieve data*/
 #define REPLY_FORMAT_OK REPLY_FORMAT_OK
-    REPLY_CLIENT_TIMEOUT = 220, /*Client has been timed out*/
+                            REPLY_CLIENT_TIMEOUT = 220, /*Client has been timed out*/
 #define REPLY_CLIENT_TIMEOUT REPLY_CLIENT_TIMEOUT
-    REPLY_CLIENT_NOT_AUTH = 230, /*Client is not logged in*/
+                            REPLY_CLIENT_NOT_AUTH = 230, /*Client is not logged in*/
 #define REPLY_CLIENT_NOT_AUTH REPLY_CLIENT_NOT_AUTH
-    REPLY_SERVER_NOT_READY = 240, /*Server is not ready*/
+                            REPLY_SERVER_NOT_READY = 240, /*Server is not ready*/
 #define REPLY_SERVER_NOT_READY REPLY_SERVER_NOT_READY
 };
 
@@ -77,7 +77,7 @@ typedef enum {
     EVENT_TIMEOUT_END /*The client timeout has ended*/
 } EventType;
 
- enum ServerModeType{
+enum ServerModeType {
     RUN_EXIT = 0, /*exit*/
 #define RUN_EXIT RUN_EXIT
     RUN_DEFAULT = 1, /*Default mode*/
@@ -86,6 +86,18 @@ typedef enum {
 #define RUN_DB_DEBUG RUN_DB_DEBUG
 };
 
+typedef enum {
+    SEVERITY_EMERGENCY,
+    SEVERITY_ALERT,
+    SEVERITY_CRITICAL,
+    SEVERITY_ERROR,
+    SEVERITY_WARNING,
+    SEVERITY_INFO,
+    SEVERITY_DEBUG
+}LogSeverityType;
+
+#define SEVERITY_TYPES_COUNT 7
+extern const char *severity_types[SEVERITY_TYPES_COUNT]; 
 #define IP_DEFAULT "default"
 #define PORT_DEFAULT 42424
 #define LOG_PATH_DEFAULT "./server.log"

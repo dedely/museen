@@ -7,7 +7,6 @@
 #include <unistd.h>
 #include <fcntl.h> //for non blocking  options
 #include "util.h"
-#include "types.h"
 
 /**
  * @brief Create a tcp server object, i.e. a listening socket on the given port with
@@ -123,9 +122,9 @@ char *malloc_str(int length) {
  * @param ip
  * @return char*
  */
-char *log_info(char *message, char *ip) {
+char *format_log(char *message, char *ip, LogSeverityType severity) {
     char *buf = malloc_str(150);
-    snprintf(buf, 150, "[INFO] %s %s %s", get_timestamp(), ip, message);
+    snprintf(buf, 150, "[%s] %s %s %s", severity_types[severity], get_timestamp(), ip, message);
     return  buf;
 }
 

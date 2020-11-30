@@ -169,7 +169,7 @@ void *run_server(void *data) {
                 append_str(cli_info, cli_port, BUFFER_SIZE);
 
                 //write to log file
-                char *tmp = log_info("is connected\n", cli_info);
+                char *tmp = format_log("is connected\n", cli_info, SEVERITY_INFO);
                 write_log(tmp, strlen(tmp), server);
                 printf("%s", tmp);
 

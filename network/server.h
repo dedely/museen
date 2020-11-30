@@ -3,7 +3,7 @@
 #include <pthread.h>
 #include <netinet/in.h>
 #include </usr/include/postgresql/libpq-fe.h>
-
+#include "types.h"
 
 /**
  * @brief Server data structure to keep track of the active drivers
