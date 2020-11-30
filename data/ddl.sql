@@ -41,8 +41,8 @@ CREATE TABLE visitor
     visitor_first_name    VARCHAR(20)         NOT NULL,
     visitor_last_name     VARCHAR(20)         NOT NULL,
     visitor_birthdate     DATE                NOT NULL,
-    visitor_password_hash VARCHAR(255)        NOT NULL,
-    visitor_authkey_hash  VARCHAR(255) UNIQUE NOT NULL,
+    visitor_password_hash VARCHAR(64)        NOT NULL, --sha256 hashes are 64 characters long
+    visitor_authkey_hash  VARCHAR(64) UNIQUE NOT NULL, --sha256 hashes are 64 characters long
     CONSTRAINT visitor_pk PRIMARY KEY (visitor_id),
     CONSTRAINT visitor_id_min_length CHECK (length(visitor_id) >= 4)
 );
