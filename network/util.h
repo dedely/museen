@@ -11,5 +11,8 @@ char *malloc_str(int length);
 char *format_log(char *message, char *ip, LogSeverityType severity);
 void append_str(char *dest, char *str, int max_size);
 char *format_cli_info(struct sockaddr_in cli_addr);
+int is_timestamp(char *str);
+int is_visitor_id(char *str);
+int is_auth_key(char *str);
 
 #endif /* _UTIL_H_ */

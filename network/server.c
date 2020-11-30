@@ -101,6 +101,12 @@ void write_log(char *message, int  length, Server *s) {
     pthread_mutex_unlock(&s->lock);
 }
 
+/**
+ * @brief The server thread function
+ *
+ * @param data
+ * @return void*
+ */
 void *run_server(void *data) {
     Server *server = data;
     struct sockaddr_in cli_addr; /*Client address*/
@@ -154,7 +160,6 @@ void *run_server(void *data) {
                     exit(EXIT_FAILURE);
                 }
 
-                //Format client_info as string (ip:port)
                 char *cli_info = format_cli_info(cli_addr);
 
                 //write to log file
@@ -178,9 +183,8 @@ void *run_server(void *data) {
 
                 r = pthread_create(&d_tid, thread_attributes, client_handler, driver);
 
-                r = pthread_attr_destroy(thread_attributes);//Not sure...
+                r = pthread_attr_destroy(thread_attributes);
             }
-            //might add other cases later(allow server to read std input), which is why I didn't write an && condition
         }
         else { /*If select was unlocked due to timeout*/
             //Decrement drivers count because no driver thread was started

@@ -67,7 +67,8 @@ typedef enum {
 } ClientStateType;
 
 typedef enum {
-    EVENT_QUIT = 0,
+    EVENT_DISCONNECT = 0,
+    EVENT_EXIT,
     EVENT_CONNECTED,
     EVENT_AUTH, /*Client sent a login key*/
     EVENT_QUERY, /*Client sent a query type*/

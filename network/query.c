@@ -22,6 +22,13 @@ PGconn *connect_db(char * url) {
     return conn;
 }
 
+/**
+ * @brief Checks if a visitor matches with the provided auth_key in the database.
+ * 
+ * @param conn 
+ * @param auth_key 
+ * @return char* 
+ */
 char *query_login(PGconn *conn, char *auth_key) {
     char *id = malloc_str(ID_SIZE);
     bzero(id, ID_SIZE);
@@ -50,6 +57,11 @@ void store_position(PGconn *conn, char *data, int length){
     char *tmp;
 }
 
+/**
+ * @brief Data insertion test
+ * 
+ * @param conn 
+ */
 void insert_test(PGconn *conn) {
     printf("Running INSERT INTO query test...\n");
     char query[Q_MAX_SIZE] = "INSERT INTO \"public\".\"location_history\" (location_visitor_id, location_id, location_time_in, location_time_out) VALUES(\'jtest\', 1,\'";
@@ -68,6 +80,11 @@ void insert_test(PGconn *conn) {
     printf("%s\n", PQresultErrorMessage(result));
 }
 
+/**
+ * @brief Performs an authentification test
+ * 
+ * @param conn 
+ */
 void auth_test(PGconn *conn) {
     printf("Running authentification query test...\n");
     query_login(conn, DEBUG_KEY);
