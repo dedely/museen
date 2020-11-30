@@ -12,7 +12,7 @@
 typedef struct {
   Server *server;
   int s_dial;
-  char *ip;
+  char *cli_info;
 } Driver;
 
 /**

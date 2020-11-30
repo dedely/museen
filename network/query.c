@@ -10,8 +10,8 @@
  *
  * @return PGconn*
  */
-PGconn *connect_db() {
-    PGconn *conn = PQconnectdb(ONLINE_DB_INFO);
+PGconn *connect_db(char * url) {
+    PGconn *conn = PQconnectdb(url);
     if (PQstatus(conn) == CONNECTION_BAD) {
         printf("Connexion to database server failed : %s", PQerrorMessage(conn));
         exit(EXIT_FAILURE);

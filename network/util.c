@@ -65,8 +65,8 @@ int create_tcp_server(in_addr_t ip, int port, int clients_max) {
 
 /**
  * @brief Get the current timestamp
- * 
- * @return char* 
+ *
+ * @return char*
  */
 char *get_timestamp() {
     time_t rawtime;
@@ -85,9 +85,9 @@ char *get_timestamp() {
 
 /**
  * @brief Default setting : listen on all available ips
- * 
- * @param ip 
- * @return in_addr_t 
+ *
+ * @param ip
+ * @return in_addr_t
  */
 in_addr_t set_ip(char *ip) {
     in_addr_t s_ip;
@@ -96,10 +96,11 @@ in_addr_t set_ip(char *ip) {
     }
     else {
         int r = inet_pton(AF_INET, ip, &s_ip);
-        if(r != 1){
+        if (r != 1) {
             s_ip = htonl(INADDR_ANY);
             printf("Incorrect ip format [%s], using default settings instead...\n", ip);
-        }else{
+        }
+        else {
             printf("Provided ip is in the correct format.\n");
         }
     }
@@ -113,4 +114,28 @@ char *malloc_str(int length) {
         exit(EXIT_FAILURE);
     }
     return str;
+}
+
+/**
+ * @brief Format [info] level log string (combined string length must be under 150 char);
+ *
+ * @param message
+ * @param ip
+ * @return char*
+ */
+char *log_info(char *message, char *ip) {
+    char *buf = malloc_str(150);
+    snprintf(buf, 150, "[INFO] %s %s %s", get_timestamp(), ip, message);
+    return  buf;
+}
+
+/**
+ * @brief Appends str to dest
+ * 
+ * @param dest 
+ * @param str 
+ * @param max_size max size of dest ('\0' included)
+ */
+void append_str(char *dest, char *str, int max_size) {
+    strncat(dest, str, max_size - (strlen(dest) + 1));
 }

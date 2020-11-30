@@ -15,6 +15,8 @@ int main(int argc, char *argv[]) {
   int mode = RUN_DEFAULT;
   char *ip = IP_DEFAULT;
   int port = PORT_DEFAULT;
+  char *log_file = LOG_PATH_DEFAULT;
+  char *db_url = ONLINE_DB_INFO;
 
   while ((option = getopt(argc, argv, format)) != -1) {
     switch (option) {
@@ -44,10 +46,10 @@ int main(int argc, char *argv[]) {
 
   //We need to be able to test the database-server connection separately.
   if (RUN_DEFAULT == mode) {
-    run(ip, port);
+    run(ip, port, log_file, db_url);
   }
   else if(RUN_DB_DEBUG == mode){
-    run_debug();
+    run_debug(db_url);
   }
   return 0;
 }

@@ -6,6 +6,7 @@
 #include <arpa/inet.h>
 #include <pthread.h>
 #include <string.h>
+#include <fcntl.h> //for logs
 #include "util.h"
 #include "server.h"
 #include "driver.h"
@@ -19,7 +20,7 @@
  *  the server running until a shutdown is requested.
  *
  */
-void run(char *ip, int port) {
+void run(char *ip, int port, char *log_file, char *db_url) {
     in_addr_t s_ip = set_ip(ip);
     Server *server = malloc(sizeof(Server));
     if (server == NULL) {
@@ -28,7 +29,7 @@ void run(char *ip, int port) {
     }
     pthread_t s_tid;
 
-    init_server(s_ip, port, server);
+    init_server(s_ip, port, log_file, db_url, server);
 
     /*We use a thread to run the server in order to keep it running
     * until a shutdown is requested
@@ -62,12 +63,17 @@ void run(char *ip, int port) {
  * @param port
  * @param s
  */
-void init_server(in_addr_t ip, int port, Server *s) {
+void init_server(in_addr_t ip, int port, char *log_file, char *db_url, Server *s) {
     s->port = port;
     s->ip = ip;
     s->drivers_cnt = 0;
     s->shutdown_requested = 0;
-    s->database_connection = connect_db();
+    s->database_connection = connect_db(db_url);
+    s->log_fd = open(log_file, O_CREAT | O_WRONLY | O_APPEND,
+        S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+    if (s->log_fd == -1) {
+        perror("Couldn't open log file as output");
+    }
     pthread_mutex_init(&s->lock, NULL);
     pthread_cond_init(&s->cond, NULL);
 }
@@ -81,6 +87,16 @@ void increment_drivers(Server *s) {
 void decrement_drivers(Server *s) {
     pthread_mutex_lock(&s->lock);
     s->drivers_cnt--;
+    pthread_cond_broadcast(&s->cond);
+    pthread_mutex_unlock(&s->lock);
+}
+
+void write_log(char *message, int  length, Server *s) {
+    pthread_mutex_lock(&s->lock);
+    int fd = s->log_fd;
+    if (write(fd, message, length) == -1) {
+        perror("Couldn't write in log file");
+    }
     pthread_cond_broadcast(&s->cond);
     pthread_mutex_unlock(&s->lock);
 }
@@ -140,10 +156,22 @@ void *run_server(void *data) {
                     perror("Couldn't accept connection");
                     exit(EXIT_FAILURE);
                 }
-                printf
-                ("Client %s (port %d) is connected\n",
-                    inet_ntoa(cli_addr.sin_addr),
-                    ntohs(cli_addr.sin_port));
+
+                //Format client_info as string (ip:port)
+                char cli_info[BUFFER_SIZE];
+                char *cli_ip;
+                char cli_port[10];
+                bzero(cli_info, BUFFER_SIZE);
+                cli_ip = inet_ntoa(cli_addr.sin_addr);
+                bzero(cli_port, 10);
+                sprintf(cli_port, ":%d", ntohs(cli_addr.sin_port));
+                append_str(cli_info, cli_ip, BUFFER_SIZE);
+                append_str(cli_info, cli_port, BUFFER_SIZE);
+
+                //write to log file
+                char *tmp = log_info("is connected\n", cli_info);
+                write_log(tmp, strlen(tmp), server);
+                printf("%s", tmp);
 
                 /*Create a Driver element : it gives access to the server thread and
                  *to the correct socket descriptor to the thread that will handle the client)
@@ -151,7 +179,7 @@ void *run_server(void *data) {
                 Driver *driver = malloc(sizeof(Driver));
                 driver->server = server;
                 driver->s_dial = s_dial;
-                driver->ip = inet_ntoa(cli_addr.sin_addr);
+                driver->cli_info = cli_info;
 
                 /*Start a detached thread
                 *(detached because no other thread will wait for it to complete)
@@ -179,13 +207,22 @@ void *run_server(void *data) {
         }
     }
 
-    close(s_listen);
+    if (close(s_listen) == -1) {
+        perror("Couldn't close socket");
+    }
+
+    pthread_mutex_lock(&server->lock);
+    if (close(server->log_fd) == -1) {
+        perror("Couldn't close log file");
+    }
+    pthread_mutex_unlock(&server->lock);
+
     PQfinish(conn);
     return (NULL);
 }
 
-void run_debug() {
-    PGconn *conn = connect_db();
+void run_debug(char *db_url) {
+    PGconn *conn = connect_db(db_url);
 
     insert_test(conn);
     auth_test(conn);

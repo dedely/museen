@@ -5,14 +5,15 @@
 #include <stdio.h>
 #include <netinet/in.h>
 #include "driver.h"
+#include "server.h"
 #include "query.h"
 #include "util.h"
 
-void read_event(int *s_dial, char **data, EventType *event, char *ip);
+void read_event(int *s_dial, char **data, EventType *event, char *cli_info, Server *server);
 
-ClientStateType login_handler(char *data, int *s_dial, char *ip, PGconn *conn);
-ClientStateType query_handler(char *data, int *s_dial, char *ip, PGconn *conn);
-ClientStateType data_handler(char *data, int *s_dial, char *ip, PGconn *conn);
+ClientStateType login_handler(char *data, int *s_dial, char *cli_info, PGconn *conn);
+ClientStateType query_handler(char *data, int *s_dial, char *cli_info, PGconn *conn);
+ClientStateType data_handler(char *data, int *s_dial, char *cli_info, PGconn *conn);
 ClientStateType timeout_handler(int *s_dial);
 
 /**
@@ -24,7 +25,7 @@ ClientStateType timeout_handler(int *s_dial);
  */
 void *client_handler(void *param) {
     Driver *driver = param;
-    char *ip = driver->ip;
+    char *cli_info = driver->cli_info;
     Server *server = driver->server;
     PGconn *conn = server->database_connection;
     int *s_dial = &driver->s_dial;
@@ -34,7 +35,7 @@ void *client_handler(void *param) {
     int stop = 0;
 
     while (!stop) {
-        read_event(s_dial, &data, &event, ip);
+        read_event(s_dial, &data, &event, cli_info, server);
 
         /*We use a state machine to handle the client.
         * Code related to specific events is delegated to the corresponding function.
@@ -42,17 +43,17 @@ void *client_handler(void *param) {
         switch (next_state) {
         case CLIENT_INIT:
             if (EVENT_DATA == event) {
-                next_state = login_handler(data, s_dial, ip, conn);
+                next_state = login_handler(data, s_dial, cli_info, conn);
             }
             break;
         case CLIENT_IDLE:
             if (EVENT_DATA == event) {
-                next_state = query_handler(data, s_dial, ip, conn);
+                next_state = query_handler(data, s_dial, cli_info, conn);
             }
             break;
         case CLIENT_MADE_QUERY:
             if (EVENT_DATA == event) {
-                next_state = data_handler(data, s_dial, ip, conn);
+                next_state = data_handler(data, s_dial, cli_info, conn);
             }
             break;
         case CLIENT_TIMED_OUT:
@@ -72,7 +73,9 @@ void *client_handler(void *param) {
         }
     }
 
-    close(*s_dial);
+    if (close(*s_dial) == -1) {
+        perror("Couldn't close socket");
+    }
     free(driver);
     decrement_drivers(server);
     return (NULL);
@@ -99,17 +102,17 @@ int filter(char *buf, int max_length) {
 }
 
 /**
- * @brief
- *
- * @param s_dial
- * @param buf
- * @param size
- * @return EventType
+ * @brief 
+ * 
+ * @param s_dial 
+ * @param data 
+ * @param event 
+ * @param cli_info 
+ * @param server 
  */
-void read_event(int *s_dial, char **data, EventType *event, char *ip) {
+void read_event(int *s_dial, char **data, EventType *event, char *cli_info, Server *server) {
     char buf[BUFFER_SIZE];
     bzero(buf, BUFFER_SIZE);
-
     int n = read(*s_dial, buf, BUFFER_SIZE);
     if (n > 0) {
         //Check for string buffer overflow
@@ -123,12 +126,19 @@ void read_event(int *s_dial, char **data, EventType *event, char *ip) {
             *data = malloc_str(length);
             strncpy(*data, buf, length + 1);
             *event = EVENT_DATA;
-            //Add it to logs later
-            printf("Recieved:[%s] from %s (client %d)\n", *data, ip, *s_dial);
+
+            //Logs
+            char tmp[150];
+            sprintf(tmp, "Recieved:[%s]\n", *data);
+            char *log = log_info(tmp, cli_info);
+            write_log(log, strlen(log), server);
+            printf("%s", log);
 
             if (DEBUG) {
                 printf("Sending back...\n");
-                write(*s_dial, *data, n);
+                if (write(*s_dial, *data, n) == -1) {
+                    perror("Couldn't write on file descriptor");
+                }
             }
         }
     }
@@ -139,10 +149,14 @@ void read_event(int *s_dial, char **data, EventType *event, char *ip) {
 
 /**
  * @brief This function queries the database server to check if the login key provided by the client is valid.
- *
- * @return ClientStateType
+ * 
+ * @param data 
+ * @param s_dial 
+ * @param ip 
+ * @param conn 
+ * @return ClientStateType 
  */
-ClientStateType login_handler(char *data, int *s_dial, char *ip, PGconn *conn) {
+ClientStateType login_handler(char *data, int *s_dial, char *cli_info, PGconn *conn) {
     ClientStateType next_state = CLIENT_INIT;
     int n;
     int status = CONN_FAILED_NOT_PREM;
@@ -158,18 +172,20 @@ ClientStateType login_handler(char *data, int *s_dial, char *ip, PGconn *conn) {
         sprintf(reply, "%d", status);
         strncat(reply, SEPARATOR, 2);
         strncat(reply, id, ID_SIZE);
-        printf("%s (client %d) is logged in\n", ip, *s_dial);
+        printf("%s is logged in\n", cli_info);
     }
     else {
         status = CONN_FAILED_UKN;
         sprintf(reply, "%d", status);
-        printf("%s (client %d) was not logged in\n", ip, *s_dial);
+        printf("%s was not logged in\n", cli_info);
     }
     //Java client uses readline() so we add '\n' at the end of our message.
     strcat(reply, "\n");
 
     n = strlen(reply) + 1; //+1 for the '\0' character
-    write(*s_dial, reply, n);
+    if (write(*s_dial, reply, n) == -1) {
+        perror("Couldn't write on file descriptor");
+    }
     return next_state;
 }
 
@@ -178,7 +194,7 @@ ClientStateType login_handler(char *data, int *s_dial, char *ip, PGconn *conn) {
  *
  * @return ClientStateType
  */
-ClientStateType query_handler(char *data, int *s_dial, char *ip, PGconn *conn) {
+ClientStateType query_handler(char *data, int *s_dial, char *cli_info, PGconn *conn) {
     return CLIENT_MADE_QUERY;
 }
 
@@ -187,7 +203,7 @@ ClientStateType query_handler(char *data, int *s_dial, char *ip, PGconn *conn) {
  *
  * @return ClientStateType
  */
-ClientStateType data_handler(char *data, int *s_dial, char *ip, PGconn *conn) {
+ClientStateType data_handler(char *data, int *s_dial, char *cli_info, PGconn *conn) {
     return CLIENT_IDLE;
 }
 

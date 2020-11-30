@@ -87,8 +87,10 @@ typedef enum {
 };
 
 #define IP_DEFAULT "default"
-
 #define PORT_DEFAULT 42424
+#define LOG_PATH_DEFAULT "./server.log"
 #define DEBUG_KEY "8af763ee3a7549af94f472543bff710e09db9b217ab8e35a6c542db8e6330b0d"
+#define LOCAL_DB_INFO "host = localhost port = 5432 dbname = museen user = museendba password = museen"
+#define ONLINE_DB_INFO "postgres://vpyfxlkr:Sjq64v_di28D9xpqzF4Y_XIiVkv6Upza@kandula.db.elephantsql.com:5432/vpyfxlkr"
 
 #endif /*_TYPE_H_*/
