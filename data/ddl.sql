@@ -30,7 +30,6 @@ CREATE TABLE guided_tour
     gt_guide_name VARCHAR(15) NOT NULL,
     gt_day        CHAR(2)     NOT NULL,
     gt_hour       TIME        NOT NULL,
-    gt_place      VARCHAR(15) NOT NULL,
     CONSTRAINT gt_pk PRIMARY KEY (gt_id),
     CONSTRAINT gt_id_fk FOREIGN KEY (gt_id) REFERENCES pricing (pricing_id)
 );
@@ -83,7 +82,6 @@ CREATE TABLE artist
     artist_name              VARCHAR(20) NOT NULL,
     artist_birth             DATE,
     artist_death             DATE,
-    artist_artistic_movement INTEGER,
     artist_bio               VARCHAR(150),
     CONSTRAINT artist_pk PRIMARY KEY (artist_id)
 );
@@ -92,7 +90,6 @@ CREATE TABLE artistic_movement
 (
     artistic_movement_id          SERIAL,
     artistic_movement_name        VARCHAR(30) NOT NULL,
-    artistic_movement_lead_artist VARCHAR(30) NOT NULL,
     CONSTRAINT artistic_movement_pk PRIMARY KEY (artistic_movement_id)
 );
 
@@ -106,7 +103,7 @@ CREATE TABLE artwork
     artwork_artist      INTEGER     NOT NULL,
     artwork_date        VARCHAR(10) NOT NULL,
     artwork_movement_id INTEGER     NOT NULL,
-    artwork_popularity  INTEGER,
+    artwork_popularity  INTEGER NOT NULL DEFAULT 0,
     artwork_location    INTEGER     NOT NULL,
     CONSTRAINT artwork_pk PRIMARY KEY (artwork_id),
     CONSTRAINT artwork_fk_artist FOREIGN KEY (artwork_artist) REFERENCES artist (artist_id),
