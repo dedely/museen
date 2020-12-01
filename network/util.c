@@ -3,6 +3,7 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <string.h>
+#include <errno.h>
 #include <locale.h>
 #include <time.h>
 #include <unistd.h>
@@ -75,7 +76,7 @@ char *get_timestamp() {
     struct tm *info;
     char *timestamp = (char *)malloc(30 * sizeof(char));
     if (timestamp == NULL) {
-        perror("Couldn't allocate memory in function get_timestamp()\n");
+        perror("Couldn't allocate memory in function get_timestamp()");
         exit(0);
     }
     time(&rawtime);
@@ -118,7 +119,7 @@ in_addr_t set_ip(char *ip) {
 char *malloc_str(int length) {
     char *str = (char *)malloc(length + 1 * sizeof(char));
     if (str == NULL) {
-        perror("Couldn't allocate memory\n");
+        perror("Couldn't allocate memory");
         exit(EXIT_FAILURE);
     }
     return str;

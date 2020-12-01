@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <netinet/in.h>
+#include <errno.h>
 #include "driver.h"
 #include "server.h"
 #include "query.h"
@@ -20,7 +21,7 @@ ClientStateType timeout_handler(int *s_dial);
  * @brief  The thread that manages the client retrieves from the socket
  * what the client tells.
  *
- * @param param
+ * @param param Driver*
  * @return void*
  */
 void *client_handler(void *param) {
@@ -67,7 +68,7 @@ void *client_handler(void *param) {
         if (EVENT_BUF_OVERFLOW == event) {
             next_state = CLIENT_INIT;
         }
-        //EVENT_QUIT does not depend of the state
+        //Disconnections do not depend of the state
         if ((EVENT_EXIT == event) || (EVENT_DISCONNECT == event)) {
             stop = 1;
         }
@@ -115,40 +116,48 @@ void read_event(int *s_dial, char **data, EventType *event, char *cli_info, Serv
     bzero(buf, BUFFER_SIZE);
     char *log;
     int n = read(*s_dial, buf, BUFFER_SIZE);
-    if (n > 0) {
-        //Check for string buffer overflow
-        int length = filter(buf, BUFFER_SIZE);
-        if (length == -1) {
-            *event = EVENT_BUF_OVERFLOW;
-        }
-        else {
-            //Prepare data string
-            free(*data);
-            *data = malloc_str(length);
-            strncpy(*data, buf, length + 1);
-            *event = EVENT_DATA;
-            printf("length = %d\n", length);
-
-            //Logs
-            char tmp[150];
-            sprintf(tmp, "Recieved:[%s]\n", *data);
-            log = format_log(tmp, cli_info, SEVERITY_INFO);
-            write_log(log, strlen(log), server);
-            printf("%s", log);
-
-            if (DEBUG) {
-                printf("Sending back...\n");
-                if (write(*s_dial, *data, n) == -1) {
-                    perror("Couldn't write on file descriptor");
-                }
-            }
-        }
+    printf("n = %d\n", n);
+    if (n == -1) {
+        *event = EVENT_DISCONNECT;
+        int errnum = errno;
+        log = format_log(strerror(errnum), cli_info, SEVERITY_CRITICAL);
+        write_log(log, strlen(log), server);
+        printf("%s", log);
     }
-    else {
+    else if (n == 0) {
         *event = EVENT_DISCONNECT;
         log = format_log("forced disconnect\n", cli_info, SEVERITY_WARNING);
         write_log(log, strlen(log), server);
         printf("%s", log);
+    }
+    else if (n == BUFFER_SIZE) {
+        *event = EVENT_BUF_OVERFLOW;
+        log = format_log("message was ignored : buffer overflow\n", cli_info, SEVERITY_ERROR);
+        write_log(log, strlen(log), server);
+        printf("%s", log);
+    }
+    else {
+        int length = filter(buf, BUFFER_SIZE);
+        //Prepare data string
+        free(*data);
+        *data = malloc_str(length);
+        strncpy(*data, buf, length);
+        *event = EVENT_DATA;
+
+        //Logs
+        char tmp[150];
+        bzero(tmp, 150);
+        sprintf(tmp, "Recieved:[%s]\n", *data);
+        log = format_log(tmp, cli_info, SEVERITY_INFO);
+        write_log(log, strlen(log), server);
+        printf("%s", log);
+
+        if (DEBUG) {
+            printf("Sending back...\n");
+            if (write(*s_dial, *data, n) == -1) {
+                perror("Couldn't write on file descriptor");
+            }
+        }
     }
 }
 
