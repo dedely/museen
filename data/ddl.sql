@@ -37,11 +37,11 @@ CREATE TABLE guided_tour
 CREATE TABLE visitor
 (
     visitor_id            VARCHAR(20),
-    visitor_first_name    VARCHAR(20)         NOT NULL,
-    visitor_last_name     VARCHAR(20)         NOT NULL,
-    visitor_birthdate     DATE                NOT NULL,
-    visitor_password_hash VARCHAR(255)        NOT NULL,
-    visitor_authkey_hash  VARCHAR(255) UNIQUE NOT NULL,
+    visitor_first_name    VARCHAR(20)        NOT NULL,
+    visitor_last_name     VARCHAR(20)        NOT NULL,
+    visitor_birthdate     DATE               NOT NULL,
+    visitor_password_hash VARCHAR(64)        NOT NULL, --sha256 hashes are 64 characters long
+    visitor_authkey_hash  VARCHAR(64) UNIQUE NOT NULL, --sha256 hashes are 64 characters long
     CONSTRAINT visitor_pk PRIMARY KEY (visitor_id),
     CONSTRAINT visitor_id_min_length CHECK (length(visitor_id) >= 4)
 );
@@ -78,20 +78,18 @@ CREATE TABLE location_history
 
 CREATE TABLE artist
 (
-    artist_id                SERIAL,
-    artist_name              VARCHAR(20) NOT NULL,
-    artist_birth             DATE,
-    artist_death             DATE,
-    artist_artistic_movement INTEGER,
-    artist_bio               VARCHAR(150),
+    artist_id    SERIAL,
+    artist_name  VARCHAR(20) NOT NULL,
+    artist_birth DATE,
+    artist_death DATE,
+    artist_bio   VARCHAR(150),
     CONSTRAINT artist_pk PRIMARY KEY (artist_id)
 );
 
 CREATE TABLE artistic_movement
 (
-    artistic_movement_id          SERIAL,
-    artistic_movement_name        VARCHAR(30) NOT NULL,
-    artistic_movement_lead_artist VARCHAR(30) NOT NULL,
+    artistic_movement_id   SERIAL,
+    artistic_movement_name VARCHAR(30) NOT NULL,
     CONSTRAINT artistic_movement_pk PRIMARY KEY (artistic_movement_id)
 );
 
@@ -105,7 +103,7 @@ CREATE TABLE artwork
     artwork_artist      INTEGER     NOT NULL,
     artwork_date        VARCHAR(10) NOT NULL,
     artwork_movement_id INTEGER     NOT NULL,
-    artwork_popularity  INTEGER,
+    artwork_popularity  INTEGER     NOT NULL DEFAULT 0,
     artwork_location    INTEGER     NOT NULL,
     CONSTRAINT artwork_pk PRIMARY KEY (artwork_id),
     CONSTRAINT artwork_fk_artist FOREIGN KEY (artwork_artist) REFERENCES artist (artist_id),
@@ -140,18 +138,19 @@ VALUES ('POO1', 10, 'Entrée simple', 'Entrée simple'),
 INSERT INTO subscription (subscription_id, subscription_duration)
 VALUES ('S001', 365);
 
-INSERT INTO guided_tour(gt_id, gt_guide_name, gt_day, gt_hour, gt_place)
-VALUES ('G001', 'Gilles', 'Lu', '09:00', 'Hall');
+INSERT INTO guided_tour(gt_id, gt_guide_name, gt_day, gt_hour)
+VALUES ('G001', 'Gilles', 'Lu', '09:00');
 
 INSERT INTO visitor(visitor_id, visitor_first_name, visitor_last_name, visitor_birthdate, visitor_password_hash,
                     visitor_authkey_hash)
-VALUES ('jtest', 'Jean', 'Test', '2020-01-01', 'museen', '8af763ee3a7549af94f472543bff710e09db9b217ab8e35a6c542db8e6330b0d');
+VALUES ('jtest', 'Jean', 'Test', '2020-01-01', '7bd5bcac8fb0b44d24ddbacc11c8cca0f48b65a8736212625096506947a39347',
+        '8af763ee3a7549af94f472543bff710e09db9b217ab8e35a6c542db8e6330b0d');
 
-INSERT INTO artistic_movement(artistic_movement_name, artistic_movement_lead_artist) VALUES
-('Surréalisme', 'André Breton');
+INSERT INTO artistic_movement(artistic_movement_name)
+VALUES ('Surréalisme');
 
-INSERT INTO artist(artist_name, artist_birth, artist_death, artist_artistic_movement, artist_bio)
-VALUES ('René Magritte', '1898-11-21', '1967-08-15', 1,
+INSERT INTO artist(artist_name, artist_birth, artist_death, artist_bio)
+VALUES ('René Magritte', '1898-11-21', '1967-08-15',
         'René Magritte, né le 21 novembre 1898 à Lessines dans le Hainaut (Belgique) et mort à Bruxelles le 15 août 1967, est un peintre surréaliste belge.');
 INSERT INTO artwork(artwork_title, artwork_type, artwork_artist, artwork_date, artwork_movement_id,
                     artwork_location)
