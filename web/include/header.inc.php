@@ -1,5 +1,5 @@
 <?php
-require "include/functions.inc.php";
+require_once "include/functions.inc.php";
 ?>
 
 <!DOCTYPE html>
@@ -29,5 +29,5 @@ require "include/functions.inc.php";
             <a class="p-2 text-dark" href="#">Nos oeuvres</a>
             <a class="p-2 text-dark" href="#">Réservation</a>
         </nav>
-        <a class="btn btn-outline-primary" href="./login.php">Connexion</a>
+        <a class="btn btn-outline-primary" href="./signin.php">Connexion</a>
     </div>

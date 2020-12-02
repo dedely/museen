@@ -1,13 +1,13 @@
 <?php
-//define("CONN_INFO", "postgres://vpyfxlkr:Sjq64v_di28D9xpqzF4Y_XIiVkv6Upza@kandula.db.elephantsql.com:5432/vpyfxlkr ");
-define("CONN_INFO", "host=kandula.db.elephantsql.com port=5432 dbname=vpyfxlkr user=vpyfxlkr password=Sjq64v_di28D9xpqzF4Y_XIiVkv6Upza");
-
+define("ONLINE_CONN", "host=kandula.db.elephantsql.com port=5432 dbname=vpyfxlkr user=vpyfxlkr password=Sjq64v_di28D9xpqzF4Y_XIiVkv6Upza");
+define("LOCAL_CONN", "host=localhost port=5432 dbname=postgres user=postgres password=chess");
+define("DEBUGDB", false);
 /**
  * 
  *
  * @return void
  */
-function connect_db(string $params = CONN_INFO)
+function connect_db(string $params = ONLINE_CONN)
 {
     $connected = pg_connect($params);
     //var_dump($connected);
@@ -16,14 +16,15 @@ function connect_db(string $params = CONN_INFO)
 
 function make_query(string $query)
 {
-    $conn = connect_db();
-    if(!$conn){
+    $params = (DEBUGDB) ? LOCAL_CONN : ONLINE_CONN;
+    $conn = connect_db($params);
+    if (!$conn) {
         echo "Une erreur s'est produite.\n";
         exit;
     }
     $result = pg_query($conn, $query);
-    if(!$result){
-        echo "Une erre s'est produite.\n";
+    if (!$result) {
+        echo "Une erreur s'est produite.\n";
         exit;
     }
     return $result;

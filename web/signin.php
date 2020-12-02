@@ -1,13 +1,14 @@
 <?php
+require_once "include/functions.inc.php";
 session_start();
+signin();
 $title = "Connexion · museen";
 $stylesheet = "signin.css";
 require_once "include/head.inc.php";
-signin();
 ?>
 
 <body class="text-center">
-    <form class="form-signin" method="POST" action="login.php">
+    <form class="form-signin" method="POST" action="signin.php">
         <h1 class="h3 mb-3 font-weight-normal">Connectez-vous</h1>
         <label for="inputLogin" class="sr-only">Login</label>
         <input type="text" id="inputLogin" name="id" class="form-control" placeholder="Identifiant" required="required" autofocus="autofocus" />

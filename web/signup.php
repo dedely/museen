@@ -1,10 +1,13 @@
 <?php
+require_once "include/functions.inc.php";
+session_start();
+signup();
 $title = "Inscription · museen";
 require_once "include/head.inc.php";
 ?>
 
 <body>
-    <form method="POST" action="signupresult.php">
+    <form method="POST" action="signup.php">
         <div class="form-row">
             <div class="form-group">
                 <label for="inputLogin">Login</label>
@@ -24,13 +27,13 @@ require_once "include/head.inc.php";
         <div class="form-row">
             <div class="form-group">
                 <label for="inputBirthdate">Date de naissance</label>
-                <input type="text" id="inputBirthdate" name="birthdate" class="form-control" required="required"/>
+                <input type="date" id="inputBirthdate" name="birthdate" class="form-control" required="required"/>
             </div>
         </div>
         <div class="form-row">
             <div class="form-group">
-                <label for="inputPassword">Login</label>
-                <input type="text" id="inputPassword" name="password" class="form-control" required="required" />
+                <label for="inputPassword">Mot de passe</label>
+                <input type="password" id="inputPassword" name="password" class="form-control" required="required" />
             </div>
         </div>
         <div class="form-row">
