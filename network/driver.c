@@ -43,12 +43,12 @@ void *client_handler(void *param) {
         */
         switch (next_state) {
         case CLIENT_INIT:
-            if (EVENT_DATA == event) {
+            if (EVENT_AUTH == event) {
                 next_state = login_handler(data, s_dial, cli_info, conn, server);
             }
             break;
         case CLIENT_IDLE:
-            if (EVENT_DATA == event) {
+            if (EVENT_INFO == event) {
                 next_state = query_handler(data, s_dial, cli_info, conn, server);
             }
             break;
@@ -65,11 +65,11 @@ void *client_handler(void *param) {
         default:
             break;
         }
-        if (EVENT_BUF_OVERFLOW == event) {
+        //Events that don't depend of the state.
+        if ((EVENT_BUF_OVERFLOW == event) || (EVENT_UKN == event)) {
             next_state = CLIENT_INIT;
         }
-        //Disconnections do not depend of the state
-        if ((EVENT_EXIT == event) || (EVENT_DISCONNECT == event)) {
+        else if ((EVENT_EXIT == event) || (EVENT_DISCONNECT == event)) {
             stop = 1;
         }
     }
@@ -166,11 +166,7 @@ void read_event(int *s_dial, char **data, EventType *event, char *cli_info, Serv
         *event = EVENT_UKN;
         if (length >= QUERY_CODE_LENGTH) {
             char *code = malloc_str(QUERY_CODE_LENGTH);
-            int i;
-            for (i = 0; i < QUERY_CODE_LENGTH; i++) {
-                code[i] = *data[i];
-            }
-            code[i] = '\0';
+            strncpy(code, *data, QUERY_CODE_LENGTH);
             *event = check_event(code);
         }
 
