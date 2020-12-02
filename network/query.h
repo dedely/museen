@@ -1,7 +1,7 @@
 #ifndef _QUERY_H_
 #define _QUERY_H_
 
-#include </usr/include/postgresql/libpq-fe.h>
+#include <libpq-fe.h>
 #include "types.h"
 
 #define ID_SIZE 21 //20 + 1 : visitor_id(s) have a maximum length of 20 characters

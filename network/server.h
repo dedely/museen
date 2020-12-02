@@ -2,7 +2,7 @@
 #define _SERVER_H_
 #include <pthread.h>
 #include <netinet/in.h>
-#include </usr/include/postgresql/libpq-fe.h>
+#include <libpq-fe.h>
 #include "types.h"
 
 /**
