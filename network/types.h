@@ -29,9 +29,7 @@ enum ConnectionStatusType {
  * @brief Types of server reply to a client request type.
  *
  */
-enum ServerReplyType {
-    REPLY_EMPTY_QUERY = 0, /*Empty query string*/
-#define REPLY_EMPTY_QUERY REPLY_EMPTY_QUERY 
+typedef enum {
     REPLY_FORMAT_ERROR = 200, /*Incorrect  data format*/
 #define REPLY_FORMAT_ERROR REPLY_FORMAT_ERROR
     REPLY_FORMAT_OK = 210, /*Client query is in the correct format and the server
@@ -43,7 +41,20 @@ enum ServerReplyType {
 #define REPLY_CLIENT_NOT_AUTH REPLY_CLIENT_NOT_AUTH
                             REPLY_SERVER_NOT_READY = 240, /*Server is not ready*/
 #define REPLY_SERVER_NOT_READY REPLY_SERVER_NOT_READY
-};
+} ServerReplyType;
+
+
+typedef enum {
+    CODE_EXIT,
+    CODE_LOGN,
+    CODE_INFO,
+    CODE_LOCA,
+    CODE_SUGG
+}  QueryCodeType;
+
+#define QUERY_CODE_LENGTH 4
+#define QUERY_CODE_TYPES_COUNT 5
+extern const char *query_code_types[QUERY_CODE_TYPES_COUNT]; 
 
 /**
  * @brief Types of result after running or trying to run the client's query
@@ -51,8 +62,6 @@ enum ServerReplyType {
  *
  */
 enum ResultStatusType {
-    RES_EMPTY_DATA = 0, /*Empty data string*/
-#define RES_EMPTY_DATA RES_EMPTY_DATA
     RES_COMMAND_OK = 310, /*The command was successful*/
 #define RES_COMMAND_OK RES_COMMAND_OK
     RES_UKNOWN_POS = 320, /*The position is unknown*/
@@ -71,12 +80,16 @@ typedef enum {
     EVENT_EXIT,
     EVENT_CONNECTED,
     EVENT_AUTH, /*Client sent a login key*/
-    EVENT_QUERY, /*Client sent a query type*/
+    EVENT_INFO, /*Client sent an info query*/
+    EVENT_SUGG, /*Client sent a suggestion query*/
     EVENT_DATA, /*Client sent data*/
-    EVENT_SPAM, /*Client is flooding the server*/
+    EVENT_UKN, /*Client sent unknow data format*/
     EVENT_BUF_OVERFLOW, /*Buffer overlow*/
     EVENT_TIMEOUT_END /*The client timeout has ended*/
 } EventType;
+
+#define EVENT_TYPES_COUNT 10
+extern const char *event_types[EVENT_TYPES_COUNT]; 
 
 enum ServerModeType {
     RUN_EXIT = 0, /*exit*/

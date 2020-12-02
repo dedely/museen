@@ -1,7 +1,7 @@
 PG_PATH = $(shell pg_config --includedir)
 PG_LIBS = $(shell pg_config --libdir)
-export CPPFLAGS += -I$(PG_PATH)
-export LDFLAGS += -L$(PG_LIBS)
+CPPFLAGS += -I$(PG_PATH)
+LDFLAGS += -L$(PG_LIBS)
 
 all : museen_tcp_server
 

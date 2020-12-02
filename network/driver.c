@@ -102,21 +102,40 @@ int filter(char *buf, int max_length) {
     return valid ? length : -1;
 }
 
+EventType check_event(char *code) {
+    EventType event = EVENT_UKN;
+    if (strncmp(code, query_code_types[CODE_EXIT], QUERY_CODE_LENGTH) == 0) {
+        event = EVENT_EXIT;
+    }
+    else if (strncmp(code, query_code_types[CODE_LOGN], QUERY_CODE_LENGTH) == 0) {
+        event = EVENT_AUTH;
+    }
+    else if (strncmp(code, query_code_types[CODE_LOCA], QUERY_CODE_LENGTH) == 0) {
+        event = EVENT_DATA;
+    }
+    else if (strncmp(code, query_code_types[CODE_SUGG], QUERY_CODE_LENGTH) == 0) {
+        event = EVENT_SUGG;
+    }
+    else if (strncmp(code, query_code_types[CODE_INFO], QUERY_CODE_LENGTH) == 0) {
+        event = EVENT_INFO;
+    }
+    return event;
+}
+
 /**
- * @brief
+ * @brief Read socket content and detect event
  *
  * @param s_dial
  * @param data
  * @param event
- * @param cli_info
- * @param server
+ * @param cli_info used for logs
+ * @param server for synchronizing log write operations
  */
 void read_event(int *s_dial, char **data, EventType *event, char *cli_info, Server *server) {
     char buf[BUFFER_SIZE];
     bzero(buf, BUFFER_SIZE);
     char *log;
     int n = read(*s_dial, buf, BUFFER_SIZE);
-    printf("n = %d\n", n);
     if (n == -1) {
         *event = EVENT_DISCONNECT;
         int errnum = errno;
@@ -138,17 +157,38 @@ void read_event(int *s_dial, char **data, EventType *event, char *cli_info, Serv
     }
     else {
         int length = filter(buf, BUFFER_SIZE);
+        ServerReplyType reply = REPLY_FORMAT_ERROR;
         //Prepare data string
         free(*data);
         *data = malloc_str(length);
         strncpy(*data, buf, length);
-        *event = EVENT_DATA;
 
-        //Logs
+        *event = EVENT_UKN;
+        if (length >= QUERY_CODE_LENGTH) {
+            char *code = malloc_str(QUERY_CODE_LENGTH);
+            int i;
+            for (i = 0; i < QUERY_CODE_LENGTH; i++) {
+                code[i] = *data[i];
+            }
+            code[i] = '\0';
+            *event = check_event(code);
+        }
+
+        /*---------Logs-----------*/
+        int severity = (*event == EVENT_UKN) ? SEVERITY_WARNING : SEVERITY_INFO;
         char tmp[150];
+
+        //Event
+        bzero(tmp, 150);
+        sprintf(tmp, "event = [%s]\n", event_types[*event]);
+        log = format_log(tmp, cli_info, severity);
+        write_log(log, strlen(log), server);
+        printf("%s", log);
+
+        //Message
         bzero(tmp, 150);
         sprintf(tmp, "Recieved:[%s]\n", *data);
-        log = format_log(tmp, cli_info, SEVERITY_INFO);
+        log = format_log(tmp, cli_info, severity);
         write_log(log, strlen(log), server);
         printf("%s", log);
 
