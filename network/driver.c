@@ -326,6 +326,7 @@ ClientStateType info_query_handler(char *data, int *s_dial, char *cli_info, PGco
         char *loc = fields[1];
         if (is_location(loc) == 1) {
             result = query_info(conn, loc);
+            printf("result = %s\n", result);
             if (result != NULL) {
                 res = RES_COMMAND_OK;
             }
@@ -351,6 +352,7 @@ ClientStateType info_query_handler(char *data, int *s_dial, char *cli_info, PGco
         }
     }
     else {
+        reply = malloc_str(CODE_SIZE);
         if (snprintf(reply, 5, "%d\n", res) > 0) {
             if (write(*s_dial, reply, strlen(reply) + 1) == -1) {
                 perror("Couldn't write on file descriptor");

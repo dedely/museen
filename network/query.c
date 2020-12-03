@@ -111,6 +111,7 @@ char *query_info(PGconn *conn, char *loc) {
         for (i = 0; i < col; i++) {
             size += PQgetlength(result, 0, i);
         }
+        printf("size = %d\n", size);
         infos = malloc_str(size);
         for (int i = 0; i < col; i++) {
             tmp = (PQgetisnull(result, 0, i)) ? "?" : PQgetvalue(result, 0, i);
