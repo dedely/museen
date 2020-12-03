@@ -208,14 +208,32 @@ void read_event(int *s_dial, char **data, EventType *event, char *cli_info, Serv
  */
 ClientStateType login_handler(char *data, int *s_dial, char *cli_info, PGconn *conn, Server *server) {
     ClientStateType next_state = CLIENT_INIT;
-    int n;
-    int status = CONN_FAILED_NOT_PREM;
+    int n, recievedkey = 0;
+    int status = CONN_FAILED_UKN;
     int length = ID_SIZE + 5;
     char id[ID_SIZE];
     char reply[length];
+    char key[BUFFER_SIZE];
+    char * log;
     bzero(id, ID_SIZE);
     bzero(reply, length);
-    strncat(id, query_login(conn, data), ID_SIZE);
+    bzero(key, BUFFER_SIZE);
+    char * field = strtok(data, SEPARATOR);
+    if(field != NULL){
+        field = strtok(NULL, SEPARATOR);
+        if(field !=NULL){
+                    recievedkey = 1;
+                    strcpy(key, field);
+        }
+
+    }
+
+    if(!recievedkey){
+                log = format_log("no key\n", cli_info, SEVERITY_ERROR);
+        write_log(log, strlen(log), server);
+        printf("%s", log);
+    }else if(is_auth_key(key)!=0){
+                        strncat(id, query_login(conn, key), ID_SIZE);
     if (strlen(id) > 0) {
         next_state = CLIENT_IDLE;
         status = CONN_AUTH_OK;
@@ -224,7 +242,7 @@ ClientStateType login_handler(char *data, int *s_dial, char *cli_info, PGconn *c
         strncat(reply, id, ID_SIZE);
 
         //Logs
-        char *log = format_log("is logged in\n", cli_info, SEVERITY_INFO);
+        log = format_log("is logged in\n", cli_info, SEVERITY_INFO);
         write_log(log, strlen(log), server);
         printf("%s", log);
     }
@@ -243,6 +261,15 @@ ClientStateType login_handler(char *data, int *s_dial, char *cli_info, PGconn *c
     if (write(*s_dial, reply, n) == -1) {
         perror("Couldn't write on file descriptor");
     }
+        }else{
+            log = format_log("not an auth key\n", cli_info, SEVERITY_WARNING);
+        write_log(log, strlen(log), server);
+        printf("%s", log);
+        }
+
+    
+
+
     return next_state;
 }
 

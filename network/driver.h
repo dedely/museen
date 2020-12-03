@@ -4,7 +4,7 @@
 #include "types.h"
 #include "server.h"
 #define BUFFER_SIZE 80
-#define DEBUG 1
+#define DEBUG 0
 
 /**
  * @brief Data used by the client_handler
