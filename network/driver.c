@@ -214,62 +214,59 @@ ClientStateType login_handler(char *data, int *s_dial, char *cli_info, PGconn *c
     char id[ID_SIZE];
     char reply[length];
     char key[BUFFER_SIZE];
-    char * log;
+    char *log;
     bzero(id, ID_SIZE);
     bzero(reply, length);
     bzero(key, BUFFER_SIZE);
-    char * field = strtok(data, SEPARATOR);
-    if(field != NULL){
+    char *field = strtok(data, SEPARATOR);
+    if (field != NULL) {
         field = strtok(NULL, SEPARATOR);
-        if(field !=NULL){
-                    recievedkey = 1;
-                    strcpy(key, field);
+        if (field != NULL) {
+            recievedkey = 1;
+            strcpy(key, field);
         }
 
     }
-
-    if(!recievedkey){
-                log = format_log("no key\n", cli_info, SEVERITY_ERROR);
+    if (!recievedkey) {
+        log = format_log("no key\n", cli_info, SEVERITY_ERROR);
         write_log(log, strlen(log), server);
         printf("%s", log);
-    }else if(is_auth_key(key)!=0){
-                        strncat(id, query_login(conn, key), ID_SIZE);
-    if (strlen(id) > 0) {
-        next_state = CLIENT_IDLE;
-        status = CONN_AUTH_OK;
-        sprintf(reply, "%d", status);
-        strncat(reply, SEPARATOR, 2);
-        strncat(reply, id, ID_SIZE);
+    }
+    else if (is_auth_key(key) != 0) {
+        strncat(id, query_login(conn, key), ID_SIZE);
+        if (strlen(id) > 0) {
+            next_state = CLIENT_IDLE;
+            status = CONN_AUTH_OK;
+            sprintf(reply, "%d", status);
+            strncat(reply, SEPARATOR, 2);
+            strncat(reply, id, ID_SIZE);
 
-        //Logs
-        log = format_log("is logged in\n", cli_info, SEVERITY_INFO);
-        write_log(log, strlen(log), server);
-        printf("%s", log);
+            //Logs
+            log = format_log("is logged in\n", cli_info, SEVERITY_INFO);
+            write_log(log, strlen(log), server);
+            printf("%s", log);
+        }
+        else {
+            status = CONN_FAILED_UKN;
+            sprintf(reply, "%d", status);
+
+            char *log = format_log("was not logged in\n", cli_info, SEVERITY_INFO);
+            write_log(log, strlen(log), server);
+            printf("%s", log);
+        }
+        //Java client uses readline() so we add '\n' at the end of our message.
+        strcat(reply, "\n");
+
+        n = strlen(reply) + 1; //+1 for the '\0' character
+        if (write(*s_dial, reply, n) == -1) {
+            perror("Couldn't write on file descriptor");
+        }
     }
     else {
-        status = CONN_FAILED_UKN;
-        sprintf(reply, "%d", status);
-
-        char *log = format_log("was not logged in\n", cli_info, SEVERITY_INFO);
+        log = format_log("not an auth key\n", cli_info, SEVERITY_WARNING);
         write_log(log, strlen(log), server);
         printf("%s", log);
     }
-    //Java client uses readline() so we add '\n' at the end of our message.
-    strcat(reply, "\n");
-
-    n = strlen(reply) + 1; //+1 for the '\0' character
-    if (write(*s_dial, reply, n) == -1) {
-        perror("Couldn't write on file descriptor");
-    }
-        }else{
-            log = format_log("not an auth key\n", cli_info, SEVERITY_WARNING);
-        write_log(log, strlen(log), server);
-        printf("%s", log);
-        }
-
-    
-
-
     return next_state;
 }
 
