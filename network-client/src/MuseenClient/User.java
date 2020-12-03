@@ -3,12 +3,12 @@ package MuseenClient;
 
 
 public class User {
-	private String userID;
+	private static String userID;
 	private String authKey;
-	private String location;
+	private static int location;
 	private boolean loggedIn = false;	
 	
-	public User(String userID, String authKey, String location) {
+	public User(String userID, String authKey, int location) {
 		this.userID = userID;
 		this.authKey = authKey;
 		this.location = location;
@@ -36,22 +36,22 @@ public class User {
 	}
 
 	
-	public String getLocation() {
+	public static int getLocation() {
 		return location;
 	}
 
-	public void setLocation(String newlocation) {
-		this.location = newlocation;
+	public static void setLocation(int newlocation) {
+		User.location = newlocation;
 	}
 	
 	
 	
-	public String getUserID() {
+	public static String getUserID() {
 		return userID;
 	}
 	
 	public void setUserID(String userID) {
-		this.userID = userID;
+		User.userID = userID;
 	}
 	
 	

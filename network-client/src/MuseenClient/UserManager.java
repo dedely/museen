@@ -8,9 +8,9 @@ import java.security.NoSuchAlgorithmException;
 public class UserManager {
 	
 	public static String securize(String authKey) {
-		System.out.println(authKey);
+		//System.out.println(authKey);
 		String hashedKey = encrypt(authKey);
-		System.out.println(hashedKey);
+		//System.out.println(hashedKey);
 		return hashedKey;
 		
 	}
@@ -32,7 +32,7 @@ public class UserManager {
 			password = sb.toString();
 
 		} catch(NoSuchAlgorithmException e) {
-			e.printStackTrace();
+			System.err.println(e.getMessage());
 		}
 		return password;
 	}
@@ -40,14 +40,14 @@ public class UserManager {
 	public static void login(String authKey) {
 		String answer;
 		String hashedKey = UserManager.securize(authKey);
-		String code = "LI";
+		String code = "LOGN";
 			
 		try {
-			answer = ClientTCP.send(code+";"+hashedKey);
-			User user = new User(answer, authKey, "nowhere");
+			answer = ClientTCP.send(code, hashedKey);
+			String[] answerarray = answer.split(";");
+			User user = new User(answerarray[1], authKey, 1);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			System.out.println(e.getMessage());
 		}
 	
 					

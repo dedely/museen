@@ -14,18 +14,12 @@ public class ClientTCP {
 	
 	
 	
-	public static void connect (){
-        String definedIP ;
+	public static void connect (String definedIP){
         String message ;
         String reponse ;
         
         try {
-
-            // L'IP du serveur sur le réseau
-            definedIP = "localhost";
-            
-            // deuxieme argument : le numero de port que l'on contacte
-            socket = new Socket (definedIP, 5000) ;
+            socket = new Socket (definedIP, 42424) ;
             flux_sortie = new PrintWriter (socket.getOutputStream (), true) ;
             flux_entree = new BufferedReader (new InputStreamReader (
                                         socket.getInputStream ())) ;
@@ -35,53 +29,73 @@ public class ClientTCP {
             System.exit (1) ;
         }
         catch (IOException e) {
-        	System.err.println ("IOException");
+        	System.err.println (e.getMessage());
         	System.exit(1) ;
         }
         
  	}
 	
-	public static String send (String message) throws IOException {
-		final String separateur = ";";
-		String sepMsg[] = message.split(separateur);
-		String code = sepMsg[0];
+	public static String send (String code, String message) throws IOException {
 		String datag;
-		String reponse;;
+		String reponse;
         
 		switch (code){
-			case "INF" :
-				datag = code;
+			case "INFO" :
+				datag = code+";"+User.getLocation();
 				break;
         
-			case "PRF" :
-				datag = code;
+			case "SUGG" :
+				datag = code+";"+User.getUserID();
 				break;
 
-			case "LOC" :
-				datag = code;
+			case "LOCA" :
+				datag = code+";"+User.getUserID()+";"+message;
 				break;
             
-			case "LGN" :
-				datag = code;
+			case "LOGN" :
+				datag = code+";"+message;
 				break;
         	
-			default :
+			case "EXIT" :
 				datag = code;
+				break;
+				
+			default :
+				datag = "none";
+				System.err.println ("Unknown Sending Code");
 				break;
 		}
 		
-		// On envoit le message associé au code au serveur
-        flux_sortie.println (datag);
-        
-        // On recupere la reponse du serveur
-        reponse = flux_entree.readLine() ;
+		if(datag != "none") {
+			
+			System.out.println("Le datagramme est "+datag);
+			// On envoit le message associe au code au serveur
+	        flux_sortie.println (datag);
+	        
+	        // On recupere la reponse du serveur
+	        reponse = flux_entree.readLine() ;
+	        
+	        reponse = filter(reponse);
 
-        // On l'affiche (pour l'instant)
-        System.out.println ("La reponse du serveur a ete : " + reponse);
-        
+	        // On l'affiche (pour l'instant)
+	        System.out.println ("La reponse du serveur a ete : " + reponse);
+		}
+		else {
+			reponse = "error";
+		}
                 
 		return reponse;
 
+	}
+	
+	
+	public static String filter(String chaine) {
+		
+		if(chaine.substring(0).equals("\\s+")) {
+			int longueur = chaine.length();
+			chaine = chaine.substring(1,longueur-1);
+		}
+		return chaine;
 	}
 	
 	public static void disconnect() throws IOException {
