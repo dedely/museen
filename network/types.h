@@ -62,10 +62,12 @@ extern const char *query_code_types[QUERY_CODE_TYPES_COUNT];
  *
  */
 enum ResultStatusType {
+    RES_UNKNOWN_FORMAT = 300,
+#define RES_UNKNOWN_FORMAT RES_UNKNOWN_FORMAT
     RES_COMMAND_OK = 310, /*The command was successful*/
 #define RES_COMMAND_OK RES_COMMAND_OK
-    RES_UKNOWN_POS = 320, /*The position is unknown*/
-#define RES_UKNOWN_POS RES_UKNOWN_POS
+    RES_UNKNOWN_POS = 320, /*The position is unknown*/
+#define RES_UNKNOWN_POS RES_UNKNOWN_POS
 };
 
 typedef enum {

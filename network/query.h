@@ -10,6 +10,7 @@
 
 PGconn *connect_db();
 char *query_login(PGconn *conn, char *auth_key);
+int store_position(PGconn *conn, char *id, char *loc, char *time_in, char *time_out);
 void insert_test(PGconn *conn);
 void auth_test(PGconn *conn);
 

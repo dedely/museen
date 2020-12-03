@@ -14,5 +14,6 @@ char *format_cli_info(struct sockaddr_in cli_addr);
 int is_timestamp(char *str);
 int is_visitor_id(char *str);
 int is_auth_key(char *str);
+int is_location(char *str);
 
 #endif /* _UTIL_H_ */

@@ -230,6 +230,15 @@ int is_visitor_id(char *str) {
     return is_visitor_id;
 }
 
+int is_location(char *str){
+    int is_location = 0;
+    int loc;
+    if((loc = strtol(str, NULL, 10)!= 0) && (errno != ERANGE)){
+        is_location = 1;
+    }
+    return is_location;
+}
+
 /**
  * @brief Checks is the string matches the sha256 result format: i.e. 64 characters long and no special characters.
  * 

@@ -16,6 +16,7 @@ ClientStateType login_handler(char *data, int *s_dial, char *cli_info, PGconn *c
 ClientStateType query_handler(char *data, int *s_dial, char *cli_info, PGconn *conn, Server *server);
 ClientStateType data_handler(char *data, int *s_dial, char *cli_info, PGconn *conn, Server *server);
 ClientStateType timeout_handler(int *s_dial);
+EventType check_event(char *code);
 
 /**
  * @brief  The thread that manages the client retrieves from the socket
@@ -50,6 +51,9 @@ void *client_handler(void *param) {
         case CLIENT_IDLE:
             if (EVENT_INFO == event) {
                 next_state = query_handler(data, s_dial, cli_info, conn, server);
+            }
+            else if (EVENT_DATA == event) {
+                next_state = data_handler(data, s_dial, cli_info, conn, server);
             }
             break;
         case CLIENT_MADE_QUERY:
@@ -225,7 +229,6 @@ ClientStateType login_handler(char *data, int *s_dial, char *cli_info, PGconn *c
             recievedkey = 1;
             strcpy(key, field);
         }
-
     }
     if (!recievedkey) {
         log = format_log("no key\n", cli_info, SEVERITY_ERROR);
@@ -280,12 +283,71 @@ ClientStateType query_handler(char *data, int *s_dial, char *cli_info, PGconn *c
 }
 
 /**
- * @brief
- *
- * @return ClientStateType
+ * @brief Tries to store positionning data in the database.
+ * 
+ * @param data 
+ * @param s_dial 
+ * @param cli_info 
+ * @param conn 
+ * @param server 
+ * @return ClientStateType 
  */
 ClientStateType data_handler(char *data, int *s_dial, char *cli_info, PGconn *conn, Server *server) {
-    return CLIENT_IDLE;
+    ClientStateType next_state = CLIENT_IDLE;
+    int recieved_data = 0, cpt = 0, stored = 0, res;
+    char *log;
+    char reply[5];
+    //Parse data
+    char **fields = (char **)malloc(5 * sizeof(char *));
+    if (fields == NULL) {
+        perror("Couldn't allocate memory");
+        exit(EXIT_FAILURE);
+    }
+    char *field = strtok(data, SEPARATOR);
+    while (field != NULL && cpt < 5) {
+        fields [cpt] = field;
+        cpt++;
+        field = strtok(NULL, SEPARATOR);
+    }
+    //Check data
+    if ((field == NULL) && (cpt == 5)) {
+        int is_id = is_visitor_id(fields[1]);
+        int is_loc = is_location(fields[2]);
+        int is_time_in = is_timestamp(fields[3]);
+        int is_time_out = is_timestamp(fields[4]);
+        //Query
+        if (is_id && is_loc && is_time_in && is_time_out) {
+            recieved_data = 1;
+            stored = store_position(conn, fields[1], fields[2], fields[3], fields[4]);
+        }
+    }
+    //Results and logs
+    if (stored == 1) {
+        res = RES_COMMAND_OK;
+        log = format_log("stored position\n", cli_info, SEVERITY_INFO);
+        write_log(log, strlen(log), server);
+        printf("%s", log);
+    }
+    else if (recieved_data == 1) {
+        res = RES_UNKNOWN_POS;
+        log = format_log("did not store position\n", cli_info, SEVERITY_WARNING);
+        write_log(log, strlen(log), server);
+        printf("%s", log);
+    }
+    else {
+        res = RES_UNKNOWN_FORMAT;
+        log = format_log("unknown data format\n", cli_info, SEVERITY_ERROR);
+        write_log(log, strlen(log), server);
+        printf("%s", log);
+    }
+    //Send back result
+    if (snprintf(reply, 4, "%d", res) > 0) {
+        if (write(*s_dial, reply, strlen(reply) + 1) == -1) {
+            perror("Couldn't write on file descriptor");
+        }
+    }
+
+    return next_state;
 }
 
 /**
