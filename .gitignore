@@ -1,4 +1,3 @@
-
 *.o
 network/museen_tcp_server
 *.log
