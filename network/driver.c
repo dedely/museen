@@ -36,49 +36,72 @@ void *client_handler(void *param) {
     ClientStateType next_state = CLIENT_INIT;
     EventType event = EVENT_CONNECTED;
     int stop = 0;
+    int handled_event;
+    char reply[6];
+    int res;
 
     while (!stop) {
+        handled_event = 0;
+        bzero(reply, 5);
+        res = 0;
         read_event(s_dial, &data, &event, cli_info, server);
+
+        //Events that don't depend of the state.
+        if ((EVENT_BUF_OVERFLOW == event) || (EVENT_UKN == event)) {
+            next_state = CLIENT_INIT;
+            res = REPLY_CLIENT_NOT_AUTH;
+            if (snprintf(reply, 5, "%d\n", res) > 0) {
+                if (write(*s_dial, reply, strlen(reply) + 1) == -1) {
+                    perror("Couldn't write on file descriptor");
+                }
+            }
+            handled_event = 1;
+        }
+        else if ((EVENT_EXIT == event) || (EVENT_DISCONNECT == event)) {
+            stop = 1;
+            handled_event = 1;
+        }
 
         /*We use a state machine to handle the client.
         * Code related to specific events is delegated to the corresponding function.
         */
-        switch (next_state) {
-        case CLIENT_INIT:
-            if (EVENT_AUTH == event) {
-                next_state = login_handler(data, s_dial, cli_info, conn, server);
+        if (!handled_event) {
+            switch (next_state) {
+            case CLIENT_INIT:
+                if (EVENT_AUTH == event) {
+                    next_state = login_handler(data, s_dial, cli_info, conn, server);
+                }
+                else {
+                    res = REPLY_CLIENT_NOT_AUTH;
+                    if (snprintf(reply, 5, "%d\n", res) > 0) {
+                        if (write(*s_dial, reply, strlen(reply) + 1) == -1) {
+                            perror("Couldn't write on file descriptor");
+                        }
+                    }
+                }
+                break;
+            case CLIENT_IDLE:
+                if (EVENT_INFO == event) {
+                    next_state = info_query_handler(data, s_dial, cli_info, conn, server);
+                }
+                else if (EVENT_DATA == event) {
+                    next_state = data_handler(data, s_dial, cli_info, conn, server);
+                }
+                else if (EVENT_SUGG == event) {
+                    next_state = sugg_query_handler(data, s_dial, cli_info, conn, server);
+                }
+                else {
+                    res = REPLY_CLIENT_ALREADY_AUTH;
+                    if (snprintf(reply, 5, "%d\n", res) > 0) {
+                        if (write(*s_dial, reply, strlen(reply) + 1) == -1) {
+                            perror("Couldn't write on file descriptor");
+                        }
+                    }
+                }
+                break;
+            default:
+                break;
             }
-            break;
-        case CLIENT_IDLE:
-            if (EVENT_INFO == event) {
-                next_state = info_query_handler(data, s_dial, cli_info, conn, server);
-            }
-            else if (EVENT_DATA == event) {
-                next_state = data_handler(data, s_dial, cli_info, conn, server);
-            }
-            else if (EVENT_SUGG == event) {
-                next_state = sugg_query_handler(data, s_dial, cli_info, conn, server);
-            }
-            break;
-        case CLIENT_MADE_QUERY:
-            if (EVENT_DATA == event) {
-                next_state = data_handler(data, s_dial, cli_info, conn, server);
-            }
-            break;
-        case CLIENT_TIMED_OUT:
-            if (EVENT_TIMEOUT_END == event) {
-                next_state = timeout_handler(s_dial);
-            }
-            break;
-        default:
-            break;
-        }
-        //Events that don't depend of the state.
-        if ((EVENT_BUF_OVERFLOW == event) || (EVENT_UKN == event)) {
-            next_state = CLIENT_INIT;
-        }
-        else if ((EVENT_EXIT == event) || (EVENT_DISCONNECT == event)) {
-            stop = 1;
         }
     }
 
@@ -179,8 +202,8 @@ void read_event(int *s_dial, char **data, EventType *event, char *cli_info, Serv
         }
 
         if (*event == EVENT_EXIT) {
-            char reply[5];
-            if (snprintf(reply, 4, "%d", REPLY_BYE) > 0) {
+            char reply[6];
+            if (snprintf(reply, 5, "%d\n", REPLY_BYE) > 0) {
                 if (write(*s_dial, reply, strlen(reply) + 1) == -1) {
                     perror("Couldn't write on file descriptor");
                 }
@@ -244,6 +267,11 @@ ClientStateType login_handler(char *data, int *s_dial, char *cli_info, PGconn *c
         }
     }
     if (!recievedkey) {
+        if (snprintf(reply, 5, "%d\n", REPLY_FORMAT_ERROR) > 0) {
+            if (write(*s_dial, reply, strlen(reply) + 1) == -1) {
+                perror("Couldn't write on file descriptor");
+            }
+        }
         log = format_log("no key\n", cli_info, SEVERITY_ERROR);
         write_log(log, strlen(log), server);
         printf("%s", log);
@@ -293,30 +321,28 @@ ClientStateType login_handler(char *data, int *s_dial, char *cli_info, PGconn *c
  */
 ClientStateType info_query_handler(char *data, int *s_dial, char *cli_info, PGconn *conn, Server *server) {
     int res = REPLY_FORMAT_OK;
-    char reply[5];
+    char reply[6];
 
     //Send back result
-    if (snprintf(reply, 4, "%d", res) > 0) {
+    if (snprintf(reply, 5, "%d\n", res) > 0) {
         if (write(*s_dial, reply, strlen(reply) + 1) == -1) {
             perror("Couldn't write on file descriptor");
         }
     }
-
 
     return CLIENT_IDLE;
 }
 
 ClientStateType sugg_query_handler(char *data, int *s_dial, char *cli_info, PGconn *conn, Server *server) {
     int res = REPLY_FORMAT_OK;
-    char reply[5];
+    char reply[6];
 
     //Send back result
-    if (snprintf(reply, 4, "%d", res) > 0) {
+    if (snprintf(reply, 5, "%d\n", res) > 0) {
         if (write(*s_dial, reply, strlen(reply) + 1) == -1) {
             perror("Couldn't write on file descriptor");
         }
     }
-
 
     return CLIENT_IDLE;
 }
@@ -335,7 +361,7 @@ ClientStateType data_handler(char *data, int *s_dial, char *cli_info, PGconn *co
     ClientStateType next_state = CLIENT_IDLE;
     int recieved_data = 0, cpt = 0, stored = 0, res;
     char *log;
-    char reply[5];
+    char reply[6];
     //Parse data
     char **fields = (char **)malloc(5 * sizeof(char *));
     if (fields == NULL) {
@@ -380,7 +406,7 @@ ClientStateType data_handler(char *data, int *s_dial, char *cli_info, PGconn *co
         printf("%s", log);
     }
     //Send back result
-    if (snprintf(reply, 4, "%d", res) > 0) {
+    if (snprintf(reply, 5, "%d\n", res) > 0) {
         if (write(*s_dial, reply, strlen(reply) + 1) == -1) {
             perror("Couldn't write on file descriptor");
         }

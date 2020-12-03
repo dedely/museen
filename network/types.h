@@ -35,8 +35,8 @@ typedef enum {
     REPLY_FORMAT_OK = 210, /*Client query is in the correct format and the server
                             is ready to recieve data*/
 #define REPLY_FORMAT_OK REPLY_FORMAT_OK
-                            REPLY_CLIENT_TIMEOUT = 220, /*Client has been timed out*/
-#define REPLY_CLIENT_TIMEOUT REPLY_CLIENT_TIMEOUT
+                            REPLY_CLIENT_ALREADY_AUTH = 220, /*Client has been already logged in*/
+#define REPLY_CLIENT_ALREADY_AUTH REPLY_CLIENT_ALREADY_AUTH
                             REPLY_CLIENT_NOT_AUTH = 230, /*Client is not logged in*/
 #define REPLY_CLIENT_NOT_AUTH REPLY_CLIENT_NOT_AUTH
                             REPLY_SERVER_NOT_READY = 240, /*Server is not ready*/
