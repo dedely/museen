@@ -230,10 +230,10 @@ int is_visitor_id(char *str) {
     return is_visitor_id;
 }
 
-int is_location(char *str){
+int is_location(char *str) {
     int is_location = 0;
     int loc;
-    if((loc = strtol(str, NULL, 10)!= 0) && (errno != ERANGE)){
+    if ((loc = strtol(str, NULL, 10) != 0) && (errno != ERANGE)) {
         is_location = 1;
     }
     return is_location;
@@ -241,8 +241,8 @@ int is_location(char *str){
 
 /**
  * @brief Checks is the string matches the sha256 result format: i.e. 64 characters long and no special characters.
- * 
- * @param str 
+ *
+ * @param str
  * @return int 0 for false
  */
 int is_auth_key(char *str) {
@@ -262,4 +262,32 @@ int is_auth_key(char *str) {
         }
     }
     return is_auth_key;
+}
+
+/**
+ * @brief This utility function can be used to parse data separated by a using string delimiter.
+ * 
+ * @param data 
+ * @param fields_count Number of fields expected
+ * @param separator 
+ * @return char** NULL if the data is not in the correct format
+ */
+char **parse_data(char *data, int fields_count, char *separator) {
+    int correct_format = 0, cpt = 0;
+    char **fields = (char **)malloc(fields_count * sizeof(char *));
+    if (fields == NULL) {
+        perror("Couldn't allocate memory");
+        exit(EXIT_FAILURE);
+    }
+    char *field = strtok(data, separator);
+    while (field != NULL && cpt < fields_count) {
+        fields[cpt] = field;
+        cpt++;
+        field = strtok(NULL, separator);
+    }
+    //Check data
+    if ((field == NULL) && (cpt == fields_count)) {
+        correct_format = 1;
+    }
+    return (correct_format)? fields : NULL;
 }

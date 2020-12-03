@@ -16,4 +16,6 @@ int is_visitor_id(char *str);
 int is_auth_key(char *str);
 int is_location(char *str);
 
+
+char **parse_data(char *data, int fields_count, char *separator);
 #endif /* _UTIL_H_ */

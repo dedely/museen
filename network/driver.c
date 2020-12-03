@@ -37,7 +37,7 @@ void *client_handler(void *param) {
     EventType event = EVENT_CONNECTED;
     int stop = 0;
     int handled_event;
-    char reply[6];
+    char reply[CODE_SIZE];
     int res;
 
     while (!stop) {
@@ -200,7 +200,7 @@ void read_event(int *s_dial, char **data, EventType *event, char *cli_info, Serv
         }
 
         if (*event == EVENT_EXIT) {
-            char reply[6];
+            char reply[CODE_SIZE];
             if (snprintf(reply, 5, "%d\n", REPLY_BYE) > 0) {
                 if (write(*s_dial, reply, strlen(reply) + 1) == -1) {
                     perror("Couldn't write on file descriptor");
@@ -318,22 +318,56 @@ ClientStateType login_handler(char *data, int *s_dial, char *cli_info, PGconn *c
  * @return ClientStateType
  */
 ClientStateType info_query_handler(char *data, int *s_dial, char *cli_info, PGconn *conn, Server *server) {
-    int res = REPLY_FORMAT_OK;
-    char reply[6];
-
-    //Send back result
-    if (snprintf(reply, 5, "%d\n", res) > 0) {
-        if (write(*s_dial, reply, strlen(reply) + 1) == -1) {
-            perror("Couldn't write on file descriptor");
+    int res = REPLY_FORMAT_ERROR;
+    char *reply, *result, *log;
+    char **fields;
+    //Parse data
+    if ((fields = parse_data(data, 2, SEPARATOR)) != NULL) {
+        char *loc = fields[1];
+        if (is_location(loc) == 1) {
+            result = query_info(conn, loc);
+            if (result != NULL) {
+                res = RES_COMMAND_OK;
+            }
         }
     }
-
+    if (res == RES_COMMAND_OK) {
+        printf("result = %ld\n", strlen(result));
+        int length = strlen(result) + CODE_SIZE;
+        printf("length= %d\n", length);
+        reply = malloc_str(length);
+        //Send back result
+        if (snprintf(reply, 5, "%d;", res) > 0) {
+            strcat(reply, result);
+            strcat(reply, "\n\0");
+            if (write(*s_dial, reply, strlen(reply) + 1) == -1) {
+                perror("Couldn't write on file descriptor");
+            }
+            else {
+                log = format_log("sent artwork informations to client\n", cli_info, SEVERITY_INFO);
+                write_log(log, strlen(log), server);
+                printf("%s", log);
+            }
+        }
+    }
+    else {
+        if (snprintf(reply, 5, "%d\n", res) > 0) {
+            if (write(*s_dial, reply, strlen(reply) + 1) == -1) {
+                perror("Couldn't write on file descriptor");
+            }
+            else {
+                log = format_log("incorrect data\n", cli_info, SEVERITY_WARNING);
+                write_log(log, strlen(log), server);
+                printf("%s", log);
+            }
+        }
+    }
     return CLIENT_IDLE;
 }
 
 ClientStateType sugg_query_handler(char *data, int *s_dial, char *cli_info, PGconn *conn, Server *server) {
     int res = REPLY_FORMAT_OK;
-    char reply[6];
+    char reply[CODE_SIZE];
 
     //Send back result
     if (snprintf(reply, 5, "%d\n", res) > 0) {
@@ -359,7 +393,7 @@ ClientStateType data_handler(char *data, int *s_dial, char *cli_info, PGconn *co
     ClientStateType next_state = CLIENT_IDLE;
     int recieved_data = 0, cpt = 0, stored = 0, res;
     char *log;
-    char reply[6];
+    char reply[CODE_SIZE];
     //Parse data
     char **fields = (char **)malloc(5 * sizeof(char *));
     if (fields == NULL) {

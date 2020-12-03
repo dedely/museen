@@ -5,6 +5,8 @@
 #include <libpq-fe.h>
 #include "types.h"
 
+#define CODE_SIZE 6
+
 /**
  * @brief Server data structure to keep track of the active drivers
  * and shutdown requests.
