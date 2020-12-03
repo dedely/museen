@@ -72,6 +72,11 @@ int store_position(PGconn *conn, char *id, char *loc, char *time_in, char *time_
     return (resultStatus == PGRES_COMMAND_OK);
 }
 
+
+char *query_info(PGconn *conn, char *loc){
+    
+}
+
 /**
  * @brief Data insertion test
  *
