@@ -191,7 +191,7 @@ void read_event(int *s_dial, char **data, EventType *event, char *cli_info, Serv
         ServerReplyType reply = REPLY_FORMAT_ERROR;
         //Prepare data string
         *data = malloc_str(length);
-        strncpy(*data, buf, length);
+        strncpy(*data, buf, strlen(buf));
         *event = EVENT_UKN;
         if (length >= QUERY_CODE_LENGTH) {
             char *code = malloc_str(QUERY_CODE_LENGTH);
