@@ -174,6 +174,15 @@ void read_event(int *s_dial, char **data, EventType *event, char *cli_info, Serv
             *event = check_event(code);
         }
 
+        if (*event = EVENT_EXIT) {
+            char reply[5];
+            if (snprintf(reply, 4, "%d", REPLY_BYE) > 0) {
+                if (write(*s_dial, reply, strlen(reply) + 1) == -1) {
+                    perror("Couldn't write on file descriptor");
+                }
+            }
+        }
+
         /*---------Logs-----------*/
         int severity = (*event == EVENT_UKN) ? SEVERITY_WARNING : SEVERITY_INFO;
         char tmp[150];
@@ -284,13 +293,13 @@ ClientStateType query_handler(char *data, int *s_dial, char *cli_info, PGconn *c
 
 /**
  * @brief Tries to store positionning data in the database.
- * 
- * @param data 
- * @param s_dial 
- * @param cli_info 
- * @param conn 
- * @param server 
- * @return ClientStateType 
+ *
+ * @param data
+ * @param s_dial
+ * @param cli_info
+ * @param conn
+ * @param server
+ * @return ClientStateType
  */
 ClientStateType data_handler(char *data, int *s_dial, char *cli_info, PGconn *conn, Server *server) {
     ClientStateType next_state = CLIENT_IDLE;
@@ -305,7 +314,7 @@ ClientStateType data_handler(char *data, int *s_dial, char *cli_info, PGconn *co
     }
     char *field = strtok(data, SEPARATOR);
     while (field != NULL && cpt < 5) {
-        fields [cpt] = field;
+        fields[cpt] = field;
         cpt++;
         field = strtok(NULL, SEPARATOR);
     }

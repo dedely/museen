@@ -41,6 +41,8 @@ typedef enum {
 #define REPLY_CLIENT_NOT_AUTH REPLY_CLIENT_NOT_AUTH
                             REPLY_SERVER_NOT_READY = 240, /*Server is not ready*/
 #define REPLY_SERVER_NOT_READY REPLY_SERVER_NOT_READY
+                            REPLY_BYE = 250,
+#define REPLY_BYE REPLY_BYE
 } ServerReplyType;
 
 
@@ -54,7 +56,7 @@ typedef enum {
 
 #define QUERY_CODE_LENGTH 4
 #define QUERY_CODE_TYPES_COUNT 5
-extern const char *query_code_types[QUERY_CODE_TYPES_COUNT]; 
+extern const char *query_code_types[QUERY_CODE_TYPES_COUNT];
 
 /**
  * @brief Types of result after running or trying to run the client's query
@@ -91,7 +93,7 @@ typedef enum {
 } EventType;
 
 #define EVENT_TYPES_COUNT 10
-extern const char *event_types[EVENT_TYPES_COUNT]; 
+extern const char *event_types[EVENT_TYPES_COUNT];
 
 enum ServerModeType {
     RUN_EXIT = 0, /*exit*/
@@ -113,7 +115,7 @@ typedef enum {
 }LogSeverityType;
 
 #define SEVERITY_TYPES_COUNT 7
-extern const char *severity_types[SEVERITY_TYPES_COUNT]; 
+extern const char *severity_types[SEVERITY_TYPES_COUNT];
 #define IP_DEFAULT "default"
 #define PORT_DEFAULT 42424
 #define LOG_PATH_DEFAULT "./server.log"
