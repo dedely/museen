@@ -220,9 +220,10 @@ void read_event(int *s_dial, char **data, EventType *event, char *cli_info, Serv
         printf("%s", log);
 
         //Message
-        bzero(tmp, 150);
-        sprintf(tmp, "Recieved:[%s]\n", *data);
-        log = format_log(tmp, cli_info, severity);
+        char msg[120];
+        bzero(msg, 120);
+        sprintf(msg, "Recieved:[%s]\n", *data);
+        log = format_log(msg, cli_info, severity);
         write_log(log, strlen(log), server);
         printf("%s", log);
 
