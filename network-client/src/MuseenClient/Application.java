@@ -17,7 +17,8 @@ public class Application {
 			
 			BufferedReader entree_standard = new BufferedReader (new InputStreamReader ( System.in), 79);
 			
-			if (stateApp == 0) {
+			if (stateApp == 0) {	
+				
 				System.out.println("Entrez l'adresse IP du serveur");
 				try{
 					String definedIP = entree_standard.readLine();
@@ -94,11 +95,13 @@ public class Application {
 			
 			while(stateApp == 3) {
 				try {
+					System.out.println("Deconnexion en cours");
 					ClientTCP.disconnect();
+					On = false;
 				} catch (IOException e) {
 					System.err.println(e.getMessage());
 				}
-				On = false;
+				
 			}
 			
 		}

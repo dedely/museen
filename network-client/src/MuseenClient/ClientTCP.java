@@ -91,9 +91,9 @@ public class ClientTCP {
 	
 	public static String filter(String chaine) {
 		
-		if(chaine.substring(0).equals("\\s+")) {
+		if(Character.isWhitespace(chaine.charAt(0)) || !(Character.isDigit(chaine.charAt(0)))) {
 			int longueur = chaine.length();
-			chaine = chaine.substring(1,longueur-1);
+			chaine = chaine.substring(1,longueur);
 		}
 		return chaine;
 	}
