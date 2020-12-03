@@ -13,7 +13,8 @@
 void read_event(int *s_dial, char **data, EventType *event, char *cli_info, Server *server);
 
 ClientStateType login_handler(char *data, int *s_dial, char *cli_info, PGconn *conn, Server *server);
-ClientStateType query_handler(char *data, int *s_dial, char *cli_info, PGconn *conn, Server *server);
+ClientStateType info_query_handler(char *data, int *s_dial, char *cli_info, PGconn *conn, Server *server);
+ClientStateType sugg_query_handler(char *data, int *s_dial, char *cli_info, PGconn *conn, Server *server);
 ClientStateType data_handler(char *data, int *s_dial, char *cli_info, PGconn *conn, Server *server);
 ClientStateType timeout_handler(int *s_dial);
 EventType check_event(char *code);
@@ -50,10 +51,13 @@ void *client_handler(void *param) {
             break;
         case CLIENT_IDLE:
             if (EVENT_INFO == event) {
-                next_state = query_handler(data, s_dial, cli_info, conn, server);
+                next_state = info_query_handler(data, s_dial, cli_info, conn, server);
             }
             else if (EVENT_DATA == event) {
                 next_state = data_handler(data, s_dial, cli_info, conn, server);
+            }
+            else if (EVENT_SUGG == event) {
+                next_state = sugg_query_handler(data, s_dial, cli_info, conn, server);
             }
             break;
         case CLIENT_MADE_QUERY:
@@ -174,7 +178,7 @@ void read_event(int *s_dial, char **data, EventType *event, char *cli_info, Serv
             *event = check_event(code);
         }
 
-        if (*event = EVENT_EXIT) {
+        if (*event == EVENT_EXIT) {
             char reply[5];
             if (snprintf(reply, 4, "%d", REPLY_BYE) > 0) {
                 if (write(*s_dial, reply, strlen(reply) + 1) == -1) {
@@ -287,8 +291,34 @@ ClientStateType login_handler(char *data, int *s_dial, char *cli_info, PGconn *c
  *
  * @return ClientStateType
  */
-ClientStateType query_handler(char *data, int *s_dial, char *cli_info, PGconn *conn, Server *server) {
-    return CLIENT_MADE_QUERY;
+ClientStateType info_query_handler(char *data, int *s_dial, char *cli_info, PGconn *conn, Server *server) {
+    int res = REPLY_FORMAT_OK;
+    char reply[5];
+
+    //Send back result
+    if (snprintf(reply, 4, "%d", res) > 0) {
+        if (write(*s_dial, reply, strlen(reply) + 1) == -1) {
+            perror("Couldn't write on file descriptor");
+        }
+    }
+
+
+    return CLIENT_IDLE;
+}
+
+ClientStateType sugg_query_handler(char *data, int *s_dial, char *cli_info, PGconn *conn, Server *server) {
+    int res = REPLY_FORMAT_OK;
+    char reply[5];
+
+    //Send back result
+    if (snprintf(reply, 4, "%d", res) > 0) {
+        if (write(*s_dial, reply, strlen(reply) + 1) == -1) {
+            perror("Couldn't write on file descriptor");
+        }
+    }
+
+
+    return CLIENT_IDLE;
 }
 
 /**
