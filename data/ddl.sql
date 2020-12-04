@@ -135,6 +135,7 @@ CREATE TABLE artistic_movement_preference
     CONSTRAINT artist_movement_preference_max_score CHECK (amp_score <= 5)
 );
 
+
 INSERT INTO pricing (pricing_id, pricing_price, pricing_name, pricing_description)
 VALUES ('P001', 10, 'Entrée simple', 'Entrée simple'),
        ('P002', 5, 'Entrée tarif réduit', 'Tarif réduit (-50%)'),
@@ -241,20 +242,27 @@ VALUES ('La Trahison des images', 'Tableau', 1, '1928–1929', 1, 7, 5),
        ('Les Syndics', 'Tableau', 15, '1662', 7, 7, 16),
        ('La Fourrure', 'Tableau', 16, '1638', 7, 3, 17),
        ('Pietà Rondanini', 'Sculpture', 17, 'vers 1564', 5, 4, 18),
-       ('Terrasse du café le soir', 'Tableau', 8, '1988', 9, 4, 22),
-       ('L entrée du port de Trouville', 'Tableau', 9, '1870', 4, 5, 23),
-       ('Las Meninas', 'Tableau', 10, '1957', 2, 8, 24),
-       ('L Origine du monde', 'Tableau', 11, '1866', 8, 10, 25),
-       ('La Maison du pendu', 'Tableau', 12, '1873', 4, 3, 26),
+       ('Terrasse du café le soir', 'Tableau', 8, '1988', 9, 4, 19),
+       ('L entrée du port de Trouville', 'Tableau', 9, '1870', 4, 5, 20),
+       ('Las Meninas', 'Tableau', 10, '1957', 2, 8, 21),
+       ('L Origine du monde', 'Tableau', 11, '1866', 8, 10, 22),
+       ('La Maison du pendu', 'Tableau', 12, '1873', 4, 3, 23),
        ('Un bar aux Folies Bergère', 'Tableau', 13, '1882', 4, 9, 24),
        ('La Loge', 'Tableau', 14,  '1874', 4, 1, 25);
 	   
 INSERT INTO artistic_movement_preference(amp_visitor_id, amp_artistic_movement_id, amp_score)
 VALUES ('HeroAllistair', 4, 5),
 	   ('HeroAllistair', 6, 4),
-	   ('HeroAllistair', 8, 3);
+	   ('HeroAllistair', 8, 3),
+	   ('dedely',4,5),
+	   ('dedely',2,4),
+	   ('dedely',3,3);
+
 	   
 INSERT INTO artist_preference(ap_visitor_id, ap_artist_id)
 VALUES ('HeroAllistair', 4),
-	   ('HeroAllistair', 12),
-	   ('HeroAllistair', 9);
+	('HeroAllistair', 12),
+	('HeroAllistair', 9),
+	('dedely',13),
+	('dedely',12),
+	('dedely',10);
