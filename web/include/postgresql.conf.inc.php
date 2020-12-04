@@ -15,13 +15,11 @@ function make_query(string $query)
     $conn = connect_db($params);
     if (!$conn) {
         echo "Une erreur s'est produite.\n";
-        //TODO
         exit;
     }
     $result = pg_query($conn, $query);
     if (!$result) {
         echo "Une erreur s'est produite.\n";
-        //TODO
         exit;
     }
     return $result;

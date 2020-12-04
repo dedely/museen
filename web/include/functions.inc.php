@@ -53,14 +53,14 @@ function signup(): void
         $authkey = generate_random_string(AUTHKEY_LENGTH);
         $authkey_hash = hash("sha256", $authkey);
 
-        
-        if(!is_smaller_str($firstName, 20)){
+
+        if (!is_smaller_str($firstName, 20)) {
             $errors["firstNameError"] = true;
         }
-        if(!is_smaller_str($lastName, 20)){
+        if (!is_smaller_str($lastName, 20)) {
             $errors["lastNameError"] = true;
         }
-        if(!is_visitor_id($id)){
+        if (!is_visitor_id($id)) {
             $errors["idError"] = true;
         }
         if (empty($errors)) {
@@ -96,6 +96,16 @@ function get_artistic_movements(): array
     return $movements;
 }
 
+function get_visitor_name(string $id): array
+{
+    $query = "SELECT visitor_first_name, visitor_last_name FROM visitor WHERE visitor_id = '" . $id . "';";
+    $visitor_names = array();
+    if (($result = make_query($query)) != FALSE) {
+        $visitor_names = pg_fetch_row($result, NULL, PGSQL_ASSOC);
+    }
+    return $visitor_names;
+}
+
 /**
  * Queries the database to get an array of popular artworks
  *
@@ -105,10 +115,10 @@ function get_artistic_movements(): array
 function get_popular_artworks(): array
 {
     //query will get all sorting columns. will need filter afterwards
-    $query = "SELECT artwork_id, artwork_title, artwork_popularity, artwork_movement_id";
-    $query .= " FROM artwork";
-    $query .= " WHERE (artwork_movement_id, artwork_popularity) IN (SELECT artwork_movement_id, MAX(artwork_popularity)";
-    $query .= " FROM artwork GROUP BY artwork_movement_id)";
+    $query = "SELECT artwork_id, artwork_title, artwork_popularity, artwork_movement_id, artistic_movement_name";
+    $query .= " FROM artwork JOIN artistic_movement ON artwork_movement_id = artistic_movement_id";
+    $query .= " WHERE (artwork_movement_id, artwork_popularity) IN (SELECT artwork_movement_id, MAX(artwork_popularity) FROM artwork";
+    $query .= " GROUP BY artwork_movement_id)";
     $query .= " ORDER BY artwork_movement_id;";
 
     $artworks = array();
@@ -128,39 +138,21 @@ function get_popular_artworks(): array
  */
 function get_possible_preferred_artists(string $id): array
 {
-    $artists = false;
+    $artists = array();
     if (isset($id)) {
-        $query = "SELECT AR.artist_first_name, AR.artist_last_name, AVG(ATWK.artwork_popularity) AS ARTIST_POP, AMP.amp_score ";
-        $query .= " FROM artist AS AR JOIN artwork AS ATWK ON AR.artist_id = ATWK.artwork_artist JOIN artistic_movement_preference AS AMP ON ATWK.artwork_movement_id = AMP.amp_artistic_movement_id";
-        $query .= " WHERE ATWK.artwork_movement_id IN (SELECT amp_artistic_movement_id FROM artistic_movement_preference WHERE amp_visitor_id = '" . $id . "')";
-        $query .= " GROUP BY AR.artist_first_name, AR.artist_last_name, AMP.amp_score";
-        $query .= "  ORDER BY AMP.amp_score DESC, ARTIST_POP DESC;";
-        $artists = array();
+        $query = "SELECT AR.artist_id, AR.artist_first_name, AR.artist_last_name, AVG(ATWK.artwork_popularity) AS ARTIST_POP, AMP.amp_score ";
+        $query .= " FROM artist AS AR JOIN artwork AS ATWK ON AR.artist_id = ATWK.artwork_artist ";
+        $query .= " JOIN artistic_movement_preference AS AMP ON ATWK.artwork_movement_id = AMP.amp_artistic_movement_id JOIN visitor AS V ON V.visitor_id = AMP.amp_visitor_id";
+        $query .= " WHERE AMP.amp_visitor_id = '" . $id . "'";
+        $query .= " GROUP BY AR.artist_id, AMP.amp_score";
+        $query .= " ORDER BY AMP.amp_score DESC, ARTIST_POP DESC;";
         if (($result = make_query($query)) != FALSE) {
-            $artists = array();
-            if (($result = make_query($query)) != FALSE) {
-                while ($artist = pg_fetch_row($result, NULL, PGSQL_ASSOC)) {
-                    $artworks[] = $artist;
-                }
+            while ($artist = pg_fetch_row($result, NULL, PGSQL_ASSOC)) {
+                $artists[] = $artist;
             }
         }
     }
     return $artists;
-}
-
-function are_set_movement_preferences(string $id)
-{
-    $are_set = false;
-    $query = "SELECT amp_artistic_movement_id FROM artistic_movement_preference WHERE amp_visitor_id = '" . $id . "';";
-    if (($result = make_query($query)) != FALSE) {
-        $are_set = (pg_num_rows($result) >  0);
-    }
-    return $are_set;
-}
-
-function is_signed_in(): bool
-{
-    return isset($_SESSION["user"]);
 }
 
 /**
@@ -189,7 +181,7 @@ function store_movement_preferences(string $visitor_id, array $preferences): boo
 }
 
 /**
- * Undocumented function
+ * Process the movement preferences form
  *
  * @return void
  */
@@ -202,9 +194,11 @@ function handle_preferences(): void
         $c = $_GET["movementSelect3"];
         $validInput = ($a !== $b) &&  ($a !== $c) && ($b !== $c);
     }
-    if ($validInput && !are_set_movement_preferences($_SESSION["user"])) {
+    if ($validInput && !($already_set = are_set_movement_preferences($_SESSION["user"]))) {
         $preferences = array($a, $b, $c);
         $res = store_movement_preferences($_SESSION["user"], $preferences);
+    } else if ($already_set) {
+        header("location:index.php");
     } else {
         header("location:preferences.php");
     }
@@ -212,15 +206,52 @@ function handle_preferences(): void
 
 /*----------------Display----------------*/
 
+function display_popular_artworks(): void
+{
+    $artworks = get_popular_artworks();
+    echo "<table class=\"table table-striped\">\n";
+    echo "<thead>\n";
+    echo "<tr>\n";
+    echo "\t<th scope=\"col\">#</th>\n";
+    echo "\t<th scope=\"col\">Mouvement artistique</th>\n";
+    echo "\t<th scope=\"col\">Titre de l'oeuvre</th>\n";
+    echo "</tr>\n";
+    echo "</thead>\n";
+    echo "<tbody>\n";
+    foreach ($artworks as $key => $artwork) {
+        echo "<tr>\n";
+        echo "\t<th scope=\"row\">" . $artwork["artwork_movement_id"] . "</th>\n";
+        echo "\t<td>" . $artwork["artistic_movement_name"] . "</td>\n";
+        echo "\t<td>" . $artwork["artwork_title"] . "</td>\n";
+        echo "</tr>";
+    }
+    echo "</tbody>\n";
+    echo "</table>\n";
+}
+
 function show_movements_form(int $movementSelectId = 1): void
 {
     $movements = get_artistic_movements();
-    $cpt = count($movements);
-    echo "<select name=\"movementSelect" . $movementSelectId . "\" id=\"movementSelect" . $movementSelectId . "\" >\n";
-    echo "\t\t\t<option value=\"none\" selected=\"selected\" disabled=\"disabled\" hidden=\"hidden\">Préférence n°" . $movementSelectId . "</option>\n";
-    for ($i = 0; $i < $cpt; $i++) {
-        echo "\t\t\t<option value=\"" . $movements[$i]["artistic_movement_id"] . "\">" . $movements[$i]["artistic_movement_name"] . "</option>\n";
+    if (!empty($movements)) {
+        $cpt = count($movements);
+        echo "<select name=\"movementSelect" . $movementSelectId . "\" id=\"movementSelect" . $movementSelectId . "\" >\n";
+        echo "\t\t\t<option value=\"none\" selected=\"selected\" disabled=\"disabled\" hidden=\"hidden\">Préférence n°" . $movementSelectId . "</option>\n";
+        for ($i = 0; $i < $cpt; $i++) {
+            echo "\t\t\t<option value=\"" . $movements[$i]["artistic_movement_id"] . "\">" . $movements[$i]["artistic_movement_name"] . "</option>\n";
+        }
+        echo "\t\t</select>\n";
     }
+}
+
+function show_artists_form(int $artistSelectId = 1, string $visitor_id): void
+{
+    $artists = get_possible_preferred_artists($visitor_id);
+    echo "<select name=\"artistSelect" . $artistSelectId . "\" id=\"artistSelect" . $artistSelectId . "\" >\n";
+    echo "\t\t\t<option value=\"none\" selected=\"selected\" disabled=\"disabled\" hidden=\"hidden\">Préférence n°" . $artistSelectId . "</option>\n";
+    foreach ($artists as $artist) {
+        echo "\t\t\t<option value=\"" . $artist["artist_id"] . "\">" . $artist["artist_first_name"] . " " . $artist["artist_last_name"] . "</option>\n";
+    }
+
     echo "\t\t</select>\n";
 }
 
@@ -230,7 +261,8 @@ function show_signin_button(): void
     echo "<a class=\"btn btn-outline-primary\" href=\"./signin.php\">Connexion</a>\n";
 }
 
-function show_disconnect_button(): void{
+function show_disconnect_button(): void
+{
     echo "<a class=\"btn btn-outline-secondary\" href=\"./signout.php\">Déconnexion</a>\n";
 }
 
@@ -253,6 +285,11 @@ function show_account_button(): void
 
 /***********COOKIES*************/
 
+/**
+ * Remember the user
+ *
+ * @return void
+ */
 function remember_cookie(): void
 {
     if (isset($_POST["remember"], $_SESSION["user"])) {
@@ -265,7 +302,8 @@ function remember_cookie(): void
 
 /*----------------$_SESSION setters----------------*/
 
-function set_session_errors(array $errors){
+function set_session_errors(array $errors)
+{
     unset($_SESSION["errors"]);
     $_SESSION["errors"] = $errors;
 }
@@ -283,21 +321,42 @@ function set_session_authkey(string $authkey): void
 }
 
 /*----------------Utility----------------*/
+/**
+ * Queries the database to check if visitor preferences have already been stored.
+ *
+ * @param string $id
+ * @return void
+ */
+function are_set_movement_preferences(string $id)
+{
+    $are_set = false;
+    $query = "SELECT amp_artistic_movement_id FROM artistic_movement_preference WHERE amp_visitor_id = '" . $id . "';";
+    if (($result = make_query($query)) != FALSE) {
+        $are_set = (pg_num_rows($result) >  0);
+    }
+    return $are_set;
+}
+
+function is_signed_in(): bool
+{
+    return isset($_SESSION["user"]);
+}
 
 function check_sign_in_redirect(string $page = "signin.php"): void
 {
     if (!is_signed_in()) {
-        if(isset($_COOKIE["remember"])){
+        if (isset($_COOKIE["remember"])) {
             set_session_user($_COOKIE["remember"]);
-        }else{
+        } else {
             header("location:" . $page);
         }
     }
 }
 
-function check_remember_cookie() : void {
-    if(!is_signed_in()){
-        if(isset($_COOKIE["remember"])){
+function check_remember_cookie(): void
+{
+    if (!is_signed_in()) {
+        if (isset($_COOKIE["remember"])) {
             set_session_user($_COOKIE["remember"]);
         }
     }
@@ -335,6 +394,7 @@ function generate_random_string(int $length = 10): string
  * @param string $str
  * @param integer $max_length
  * @return boolean
+ * 
  */
 function is_smaller_str(string $str, int $max_length = 64): bool
 {
@@ -349,6 +409,5 @@ function is_smaller_str(string $str, int $max_length = 64): bool
  */
 function is_visitor_id(string $str): bool
 {
-    //TODO
-    return (strlen($str) >=4) && (strlen($str)<=20);
+    return (strlen($str) >= 4) && (strlen($str) <= 20);
 }

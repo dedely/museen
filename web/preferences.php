@@ -6,23 +6,23 @@ $title = "Préférences · museen";
 require_once "include/head.inc.php";
 ?>
 
-<body>
+<body class="text-center">
 
-    <h1>Choisissez vos mouvements artistiques préférés</h1>
+    <h1 class="h3 mb-3 font-weight-normal">Choisissez vos mouvements artistiques préférés</h1>
     <section>
-        <h2>Aidez nous à personnaliser votre expérience</h2>
-        <form method="GET" action="preferencesresults.php">
+        <h2 class ="h4 mb-3 font-weight-normal">Aidez nous à personnaliser votre expérience</h2>
+        <form class="form-signin" method="GET" action="preferencesresults.php">
             <?php
             for ($i = 1; $i <= 3; $i++) {
                 show_movements_form($i);
             }
             ?>
             <div class="form-row">
-                <button class="btn btn-lg btn-primary btn-block" type="submit">Valider</button>
+                <button class="btn btn-md btn-primary btn-block mx-auto" type="submit">Valider</button>
             </div>
         </form>
     </section>
 
 </body>
 
-</html>
+<?php require_once "include/footer.inc.php" ?>

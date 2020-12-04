@@ -1,8 +1,3 @@
-<?php
-require_once "include/functions.inc.php";
-session_start();
-check_remember_cookie();
-?>
 <!DOCTYPE html>
 <html lang="fr">
 
@@ -26,9 +21,6 @@ check_remember_cookie();
             Museen
         </a>
         <nav class="my-2 my-md-0 mr-md-3">
-            <a class="p-2 text-dark" href="#">Infos</a>
-            <a class="p-2 text-dark" href="#">Nos oeuvres</a>
-            <a class="p-2 text-dark" href="#">Réservation</a>
             <?php
             if (is_signed_in()) {
                 echo "<a class=\"p-2 text-dark\" href=\"account.php\">Mon compte</a>\n";
