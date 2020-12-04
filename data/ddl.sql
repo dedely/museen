@@ -9,8 +9,8 @@ CREATE TABLE pricing
 (
     pricing_id          CHAR(4),
     pricing_price       FLOAT NOT NULL,
-    pricing_name        VARCHAR(20) NOT NULL,
-    pricing_description VARCHAR(50) NOT NULL,
+    pricing_name        VARCHAR(20),
+    pricing_description VARCHAR(50),
     CONSTRAINT pricing_pk PRIMARY KEY (pricing_id)
 );
 
@@ -79,12 +79,12 @@ CREATE TABLE location_history
 
 CREATE TABLE artist
 (
-    artist_id         SERIAL,
-    artist_first_name VARCHAR(20) NOT NULL,
-    artist_last_name  VARCHAR(20),
-    artist_birth      DATE,
-    artist_death      DATE,
-    artist_bio        VARCHAR(150),
+    artist_id    SERIAL,
+    artist_first_name  VARCHAR(20) NOT NULL,
+    artist_last_name VARCHAR(20),
+    artist_birth DATE,
+    artist_death DATE,
+    artist_bio   VARCHAR(150),
     CONSTRAINT artist_pk PRIMARY KEY (artist_id)
 );
 
@@ -135,11 +135,11 @@ CREATE TABLE artistic_movement_preference
     CONSTRAINT artist_movement_preference_max_score CHECK (amp_score <= 5)
 );
 
+
 INSERT INTO pricing (pricing_id, pricing_price, pricing_name, pricing_description)
 VALUES ('P001', 10, 'Entrée simple', 'Entrée simple'),
        ('P002', 5, 'Entrée tarif réduit', 'Tarif réduit (-50%)'),
-       ('S001', 100, 'Abonnement annuel', 'Accès illimité au musée pendant 1 an'),
-       ('S002', 20, 'Abonnement mensuel', 'Accès illimité au musée pendant 30 jours'),
+       ('S001', 100, 'Abonnement annuel', 'Accès illimité au musée pendant 1 an'),('S002', 20, 'Abonnement mensuel', 'Accès illimité au musée pendant 30 jours'),
        ('G001', 15, 'Visite guidée', 'Visite guidée');
 
 INSERT INTO subscription (subscription_id, subscription_duration)
@@ -153,20 +153,12 @@ INSERT INTO visitor(visitor_id, visitor_first_name, visitor_last_name, visitor_b
                     visitor_authkey_hash)
 VALUES ('jtest', 'Jean', 'Test', '2020-01-01', '7bd5bcac8fb0b44d24ddbacc11c8cca0f48b65a8736212625096506947a39347',
         '8af763ee3a7549af94f472543bff710e09db9b217ab8e35a6c542db8e6330b0d'),
-       ('paulognaise', 'Paulo', 'Niaise', '1999-05-30',
-        '5b0bf9dd4e84e66331c1b4c81f51e234a54277cea9031df591a79ed330f5dd83',
+       ('paulognaise', 'Paulo', 'Niaise', '1999-05-30', '5b0bf9dd4e84e66331c1b4c81f51e234a54277cea9031df591a79ed330f5dd83',
         '6ae257767546adc52587faa6ab3fa00b40277e55cc57bc2b2de12d7d68c4e503'),
-       ('ML_student', 'Marco', 'Ladjoint', '1960-06-12',
-        'fa0a212adc1799e50b07edf5251d6e402160397fcc8291197e3225d4202ec5bd',
-        '13ae1f481c28f3760f658bc959e9583a5d08009449b8adaed16d0820bf196222'),
-       ('TNDD', 'Désirée-Delphine', 'Tang Nook', '1976-12-24',
-        '182e0187ef4dd6db9569b93196bfc5e5ece23d9fca405d9bfc12f307b2891a8f',
-        'c37016ea1ba649e00dc59a251aac61f259018dd369db0fdc5869dee7c4cc5e50'),
-       ('dedely', 'Adel', 'Abbas', '1999-02-12', '78b6248bb9c04928730b56f9ea27fb6b90d639cb9bd38b06e13c51b9fcd1693e',
-        'dc3e9c824e7c8f2b4eb1e1b9f7ec6afe7513613e580ec3147065e7b162e669d4'),
-       ('HeroAllistair', 'Aelien', 'Moubeche', '2001-04-30',
-        'bf63b40611e322e9457a7cdb362eb79b5be409b33474806c7b38f579da607a99',
-        'a67332fadb6e881985876096e4579df6223eb3e07578ffb82f0d5c387219e262');
+       ('ML_student', 'Marco', 'Ladjoint', '1960-06-12', 'fa0a212adc1799e50b07edf5251d6e402160397fcc8291197e3225d4202ec5bd', '13ae1f481c28f3760f658bc959e9583a5d08009449b8adaed16d0820bf196222'),
+       ('TNDD', 'Désirée-Delphine', 'Tang Nook', '1976-12-24', '182e0187ef4dd6db9569b93196bfc5e5ece23d9fca405d9bfc12f307b2891a8f', 'c37016ea1ba649e00dc59a251aac61f259018dd369db0fdc5869dee7c4cc5e50'),
+       ('dedely', 'Adel', 'Abbas', '1999-02-12', '78b6248bb9c04928730b56f9ea27fb6b90d639cb9bd38b06e13c51b9fcd1693e', 'dc3e9c824e7c8f2b4eb1e1b9f7ec6afe7513613e580ec3147065e7b162e669d4'),
+       ('HeroAllistair', 'Aelien', 'Moubeche', '2001-04-30', 'bf63b40611e322e9457a7cdb362eb79b5be409b33474806c7b38f579da607a99', 'a67332fadb6e881985876096e4579df6223eb3e07578ffb82f0d5c387219e262');
 
 INSERT INTO is_paying(ip_visitor_id, ip_pricing_id, ip_reservation_date, ip_payment_date, ip_auto_renewed)
 VALUES ('jtest', 'P001', '2020-12-01', '2020-11-27', FALSE),
@@ -230,13 +222,12 @@ VALUES ('René', 'Magritte', '1898-11-21', '1967-08-15', 'Artiste Belge'),
        ('Paul', 'Cézanne', '1839-01-19', '1906-10-22', 'Artiste Français'),
        ('Edouard', 'Manet', '1832-01-23', '1883-04-30 ', 'Artiste Français'),
        ('Auguste', 'Renoir', '1841-02-25', '1919-12-03', 'Artiste Français'),
-       ('Rembrandt', NULL, '1606-07-15', '1669-10-04', 'Artiste Néerlandais'),
+       ('Rembrandt', NULL,'1606-07-15', '1669-10-04', 'Artiste Néerlandais'),
        ('Pierre Paul', 'Rubens', '1577-06-28', '1640-05-30', 'Artiste Néerlandais'),
        ('Michel-Ange', NULL, '1475-03-06', '1564-02-18', 'Artiste de Florence');
+       
 
-
-INSERT INTO artwork(artwork_title, artwork_type, artwork_artist, artwork_date, artwork_movement_id, artwork_popularity,
-                    artwork_location)
+INSERT INTO artwork(artwork_title, artwork_type, artwork_artist, artwork_date, artwork_movement_id, artwork_popularity, artwork_location)
 VALUES ('La Trahison des images', 'Tableau', 1, '1928–1929', 1, 7, 5),
        ('Le Boulevard de Montmartre, matin d hiver', 'Tableau', 2, '1897', 4, 3, 6),
        ('La Ville n°2', 'Tableau', 3, '1910', 2, 4, 7),
@@ -251,20 +242,27 @@ VALUES ('La Trahison des images', 'Tableau', 1, '1928–1929', 1, 7, 5),
        ('Les Syndics', 'Tableau', 15, '1662', 7, 7, 16),
        ('La Fourrure', 'Tableau', 16, '1638', 7, 3, 17),
        ('Pietà Rondanini', 'Sculpture', 17, 'vers 1564', 5, 4, 18),
-       ('Terrasse du café le soir', 'Tableau', 8, '1988', 9, 4, 22),
-       ('L entrée du port de Trouville', 'Tableau', 9, '1870', 4, 5, 23),
-       ('Las Meninas', 'Tableau', 10, '1957', 2, 8, 24),
-       ('L Origine du monde', 'Tableau', 11, '1866', 8, 10, 25),
-       ('La Maison du pendu', 'Tableau', 12, '1873', 4, 3, 26),
+       ('Terrasse du café le soir', 'Tableau', 8, '1988', 9, 4, 19),
+       ('L entrée du port de Trouville', 'Tableau', 9, '1870', 4, 5, 20),
+       ('Las Meninas', 'Tableau', 10, '1957', 2, 8, 21),
+       ('L Origine du monde', 'Tableau', 11, '1866', 8, 10, 22),
+       ('La Maison du pendu', 'Tableau', 12, '1873', 4, 3, 23),
        ('Un bar aux Folies Bergère', 'Tableau', 13, '1882', 4, 9, 24),
-       ('La Loge', 'Tableau', 14, '1874', 4, 1, 25);
-
+       ('La Loge', 'Tableau', 14,  '1874', 4, 1, 25);
+	   
 INSERT INTO artistic_movement_preference(amp_visitor_id, amp_artistic_movement_id, amp_score)
 VALUES ('HeroAllistair', 4, 5),
-       ('HeroAllistair', 6, 4),
-       ('HeroAllistair', 8, 3);
+	   ('HeroAllistair', 6, 4),
+	   ('HeroAllistair', 8, 3),
+	   ('dedely',4,5),
+	   ('dedely',2,4),
+	   ('dedely',3,3);
 
+	   
 INSERT INTO artist_preference(ap_visitor_id, ap_artist_id)
 VALUES ('HeroAllistair', 4),
-       ('HeroAllistair', 12),
-       ('HeroAllistair', 9);
+	('HeroAllistair', 12),
+	('HeroAllistair', 9),
+	('dedely',13),
+	('dedely',12),
+	('dedely',10);
