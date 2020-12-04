@@ -77,24 +77,75 @@ function get_artistic_movements(): array
     $query = "SELECT artistic_movement_name FROM artistic_movement;";
     $movements = array();
     if (($result = make_query($query)) != FALSE) {
-        $rows = pg_num_rows($result);
-        for ($i = 0; $i < $rows; $i++) {
-            $movements = pg_fetch_row($result, $i);
+        while ($movement = pg_fetch_row($result)) {
+            $movements[] = $movement[0];
         }
     }
     return $movements;
+}
+
+/**
+ * Queries the database to get an array of popular artworks
+ *
+ * @return array
+ * @author Aëlien
+ */
+function get_popular_artworks(): array
+{
+    //query will get all sorting columns. will need filter afterwards
+    $query = "SELECT artwork_id, artwork_title, artwork_popularity, artwork_movement_id";
+    $query .= " FROM artwork";
+    $query .= " WHERE (artwork_movement_id, artwork_popularity) IN (SELECT artwork_movement_id, MAX(artwork_popularity)";
+    $query .= " FROM artwork GROUP BY artwork_movement_id)";
+    $query .= " ORDER BY artwork_movement_id;";
+
+    $artworks = array();
+    if (($result = make_query($query)) != FALSE) {
+        while ($artwork = pg_fetch_row($result, NULL, PGSQL_ASSOC)) {
+            $artworks[] = $artwork;
+        }
+    }
+    return $artworks;
+}
+
+/**
+ * Queries the database to get an array of the possible preferred artits
+ *
+ * @param string $id Precondition $id must be valid
+ * @return array | false if no $id provided
+ */
+function get_possible_preferred_artists(string $id): array
+{
+    $artists = false;
+    if (isset($id)) {
+        $query = "SELECT AR.artist_first_name, AR.artist_last_name, AVG(ATWK.artwork_popularity) AS ARTIST_POP, AMP.amp_score ";
+        $query .= " FROM artist AS AR JOIN artwork AS ATWK ON AR.artist_id = ATWK.artwork_artist JOIN artistic_movement_preference AS AMP ON ATWK.artwork_movement_id = AMP.amp_artistic_movement_id";
+        $query .= " WHERE ATWK.artwork_movement_id IN (SELECT amp_artistic_movement_id FROM artistic_movement_preference WHERE amp_visitor_id = '" . $id . "')";
+        $query .= " GROUP BY AR.artist_first_name, AR.artist_last_name, AMP.amp_score";
+        $query .= "  ORDER BY AMP.amp_score DESC, ARTIST_POP DESC;";
+        $artists = array();
+        if (($result = make_query($query)) != FALSE) {
+            $artists = array();
+            if (($result = make_query($query)) != FALSE) {
+                while ($artist = pg_fetch_row($result, NULL, PGSQL_ASSOC)) {
+                    $artworks[] = $artist;
+                }
+            }
+        }
+    }
+    return $artists;
 }
 
 /*----------------Display----------------*/
 
 function show_movements_form(array $movements = NULL): void
 {
-    if(is_null($movements)){
+    if (is_null($movements)) {
         $movements = get_artistic_movements();
     }
     $cpt = count($movements);
     //TODO
-    
+
 }
 
 /*----------------$_SESSION setters----------------*/
