@@ -27,3 +27,6 @@ Finally, you can list command-line options with
 ```bash
 ./museen_tcp_server -h
 ```
+
+## Client
+Just run the Application.java in network-client/src/MuseenClient
