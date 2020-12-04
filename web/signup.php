@@ -37,7 +37,7 @@ require_once "include/head.inc.php";
             </div>
         </div>
         <div class="form-row">
-            <button class="btn btn-lg btn-primary btn-block">Inscription</button>
+            <button class="btn btn-lg btn-primary btn-block" type="submit">Inscription</button>
         </div>
     </form>
 </body>
