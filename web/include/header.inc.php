@@ -1,7 +1,8 @@
 <?php
 require_once "include/functions.inc.php";
+session_start();
+check_remember_cookie();
 ?>
-
 <!DOCTYPE html>
 <html lang="fr">
 
@@ -29,5 +30,10 @@ require_once "include/functions.inc.php";
             <a class="p-2 text-dark" href="#">Nos oeuvres</a>
             <a class="p-2 text-dark" href="#">Réservation</a>
         </nav>
-        <a class="btn btn-outline-primary" href="./signin.php">Connexion</a>
+        <?php if (is_signed_in()) {
+            show_account_button();
+        } else {
+            show_signin_button();
+        }
+        ?>
     </div>

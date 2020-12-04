@@ -1,8 +1,7 @@
 <?php
 require_once "include/functions.inc.php";
 session_start();
-check_sign_in();
-handle_preferences();
+check_sign_in_redirect();
 $title = "Préférences · museen";
 require_once "include/head.inc.php";
 ?>

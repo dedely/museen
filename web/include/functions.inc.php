@@ -25,6 +25,7 @@ function signin(string $referrer = "index.php"): void
             $nbrows = pg_numrows($result);
             if ($nbrows == 1) {
                 set_session_user($id);
+                remember_cookie();
                 header("location:" . $referrer);
             }
         } else {
@@ -164,14 +165,14 @@ function store_movement_preferences(string $visitor_id, array $preferences): boo
     $score = 5;
     $query = "INSERT INTO artistic_movement_preference(amp_visitor_id, amp_artistic_movement_id, amp_score)";
     $query .= " VALUES\n";
-    for ($i=0; $i < count($preferences) - 1; $i++) { 
+    for ($i = 0; $i < count($preferences) - 1; $i++) {
         $amp_artistic_movement_id = $preferences[$i];
-        $query .= "('".$visitor_id."', ".$amp_artistic_movement_id.", ".$score."),\n";
-        if($score > 1){
-            $score --;
-        } 
+        $query .= "('" . $visitor_id . "', " . $amp_artistic_movement_id . ", " . $score . "),\n";
+        if ($score > 1) {
+            $score--;
+        }
     }
-    $query .= "('".$visitor_id."', ".$preferences[$i].", ".$score.");";
+    $query .= "('" . $visitor_id . "', " . $preferences[$i] . ", " . $score . ");";
     $result = make_query($query);
     return pg_result_status($result) === PGSQL_COMMAND_OK;
 }
@@ -212,6 +213,36 @@ function show_movements_form(int $movementSelectId = 1): void
     echo "\t\t</select>\n";
 }
 
+
+function show_signin_button(): void
+{
+    echo "<a class=\"btn btn-outline-primary\" href=\"./signin.php\">Connexion</a>\n";
+}
+
+function show_account_button(): void
+{
+    echo "<div class=\"input-group-prepend\">\n";
+    echo "\t<button class=\"btn btn-outline-secondary dropdown-toggle\" type=\"button\" data-toggle=\"dropdown\" aria-haspopup=\"true\" aria-expanded=\"false\">";
+    echo $_SESSION["user"] . "</button>\n";
+    echo "\t<div class=\"dropdown-menu\">\n";
+    echo "\t\t<a class=\"dropdown-item\" href=\"account.php\">Mon compte</a>\n";
+    echo "\t\t<a class=\"dropdown-item\" href=\"signout.php\">Déconnexion</a>\n";
+    echo "\t</div>\n";
+    echo "</div>\n";
+}
+
+/***********COOKIES*************/
+
+function remember_cookie(): void
+{
+    if (isset($_POST["remember"], $_SESSION["user"])) {
+        if ($_POST["remember"] === "remember-me") {
+            $time = time() + 60 * 60 * 24 * 30;
+            setcookie("remember", $_POST["id"],  $time, "museen/");
+        }
+    }
+}
+
 /*----------------$_SESSION setters----------------*/
 
 function set_session_user(string $id): void
@@ -228,10 +259,22 @@ function set_session_authkey(string $authkey): void
 
 /*----------------Utility----------------*/
 
-function check_sign_in(string $page = "signin.php"): void
+function check_sign_in_redirect(string $page = "signin.php"): void
 {
     if (!is_signed_in()) {
-        header("location:" . $page);
+        if(isset($_COOKIE["remember"])){
+            set_session_user($_COOKIE["remember"]);
+        }else{
+            header("location:" . $page);
+        }
+    }
+}
+
+function check_remember_cookie() : void {
+    if(!is_signed_in()){
+        if(isset($_COOKIE["remember"])){
+            set_session_user($_COOKIE["remember"]);
+        }
     }
 }
 
@@ -282,5 +325,5 @@ function is_smaller_str(string $str, int $max_length = 64): bool
 function is_visitor_id(string $str): bool
 {
     //TODO
-    return true;
+    return (strlen($str) >=4) && (strlen($str)<=20);
 }
