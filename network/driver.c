@@ -372,6 +372,7 @@ ClientStateType sugg_query_handler(char *data, int *s_dial, char *cli_info, PGco
     int res = REPLY_FORMAT_OK;
     char reply[CODE_SIZE];
 
+    char *tmp = query_sugg(conn, data);
     //Send back result
     if (snprintf(reply, 5, "%d\n", res) > 0) {
         if (write(*s_dial, reply, strlen(reply) + 1) == -1) {
