@@ -129,34 +129,25 @@ char *query_info(PGconn *conn, char *loc) {
 }
 
 /**
- * @brief Returns a list of artwork_id separated with strings.
+ * @brief Returns a list of artwork_id separated with strings. TODO...
  *
  * @param conn
  * @param id
  * @return char*
  */
 char *query_sugg(PGconn *conn, char *id) {
-
-    char query[INFO_QUERY_MAX_SIZE] = "SELECT ATWK.artwork_id, ATWK.artwork_artist, (ATWK.artwork_popularity * AMP.amp_score) AS Ordre ";
-    strncat(query, "FROM visitor as  V JOIN artistic_movement_preference AS AMP ON V.visitor_id = AMP.amp_visitor_id ", INFO_QUERY_MAX_SIZE - strlen(query));
-    strncat(query, "JOIN artwork AS ATWK ON AMP.amp_artistic_movement_id = ATWK.artwork_movement_id WHERE V.visitor_id = '", INFO_QUERY_MAX_SIZE - strlen(query));
-    strncat(query, id, INFO_QUERY_MAX_SIZE - strlen(query));
-    strncat(query, "' ORDER BY Ordre DESC LIMIT 15;", INFO_QUERY_MAX_SIZE - strlen(query));
+    char query[INFO_QUERY_MAX_SIZE] = " SELECT ATWK.artwork_id, ATWK.artwork_popularity, ATWK.artwork_movement_id, AMP.amp_score, ATWK.artwork_artist, (ATWK.artwork_popularity * AMP.amp_score) AS Ordre";
+    strncat(query, "FROM visitor AS V JOIN artistic_movement_preference AS AMP ON V.visitor_id = AMP.amp_visitor_id JOIN artwork AS ATWK ON AMP.amp_artistic_movement_id = ATWK.artwork_movement_id ", INFO_QUERY_MAX_SIZE - strlen(query));
+    strncat(query, "WHERE V.visitor_id ='", INFO_QUERY_MAX_SIZE - strlen(query));
+    strncat(query, "ORDER BY Ordre DESC LIMIT 5;'", INFO_QUERY_MAX_SIZE - strlen(query));
     printf("%s\n", query);
     PGresult *result;
     result = PQexec(conn, query);
     ExecStatusType resultStatus;
     resultStatus = PQresultStatus(result);
-
     printf("%s\n", PQresStatus(resultStatus));
     printf("%s\n", PQresultErrorMessage(result));
-
-    if (resultStatus == PGRES_TUPLES_OK) {
-        int rows = PQntuples(result);
-        rows = (rows > 5) ? 5 : rows;
-
-
-    }
+    return NULL;
 }
 
 /**
