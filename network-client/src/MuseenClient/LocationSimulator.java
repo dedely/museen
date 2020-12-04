@@ -41,14 +41,14 @@ public class LocationSimulator {
 			message = String.valueOf(User.getLocation())+";"+LocationSimulator.timestamp+";"+newtimestamp;
 			reponse = ClientTCP.send("LOCA", message);
 			if (reponse == "300")
-				System.err.println("Invalid Timestamp format");
+				System.err.println("Format Timestamp invalide");
 		}
 		catch(IOException e) {
 			System.err.println(e.getMessage());
 		}
 		LocationSimulator.timestamp = newtimestamp;
 		
-		int newlocation = (int) (1 + Math.random()*(31));
+		int newlocation = (int) (1 + Math.random()*(24));
 		User.setLocation(newlocation);
 		System.out.println("Simulateur : L'utilisateur s'est déplacé à la location de code "+newlocation);
 		

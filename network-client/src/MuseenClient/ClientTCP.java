@@ -68,7 +68,7 @@ public class ClientTCP {
 		
 		if(datag != "none") {
 			
-			System.out.println("Le datagramme est "+datag);
+			//System.out.println("Le datagramme est "+datag);
 			// On envoit le message associe au code au serveur
 	        flux_sortie.println (datag);
 	        
@@ -78,7 +78,7 @@ public class ClientTCP {
 	        reponse = filter(reponse);
 
 	        // On l'affiche (pour l'instant)
-	        System.out.println ("La reponse du serveur a ete : " + reponse);
+	        //System.out.println ("La reponse du serveur a ete : " + reponse);
 		}
 		else {
 			reponse = "error";

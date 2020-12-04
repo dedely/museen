@@ -7,6 +7,8 @@ import java.security.NoSuchAlgorithmException;
 
 public class UserManager {
 	
+	int unsuccessful = 0;
+	
 	public static String securize(String authKey) {
 		//System.out.println(authKey);
 		String hashedKey = encrypt(authKey);
@@ -37,7 +39,8 @@ public class UserManager {
 		return password;
 	}
 	
-	public static void login(String authKey) {
+	public static boolean login(String authKey) {
+		boolean connected = false;
 		String answer;
 		String hashedKey = UserManager.securize(authKey);
 		String code = "LOGN";
@@ -45,12 +48,20 @@ public class UserManager {
 		try {
 			answer = ClientTCP.send(code, hashedKey);
 			String[] answerarray = answer.split(";");
-			User user = new User(answerarray[1], authKey, 1);
+			if(answerarray[0].equals("110")) {
+				User user = new User(answerarray[1], authKey, 1);
+				connected = true;
+			}
+			else if (answerarray[0].equals("140")) {
+				System.out.println("Le serveur n'est pas prêt. Veuillez réessayez.");
+			}
+			else {
+				System.out.println("Authentification refusée. Vérifiez votre clé ou contactez le musée.");
+			}
 		} catch (IOException e) {
 			System.out.println(e.getMessage());
 		}
-	
-					
+		return connected;
 	}
 	
 	
