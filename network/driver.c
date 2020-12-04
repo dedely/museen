@@ -167,6 +167,7 @@ void read_event(int *s_dial, char **data, EventType *event, char *cli_info, Serv
     bzero(buf, BUFFER_SIZE);
     char *log;
     int n = read(*s_dial, buf, BUFFER_SIZE);
+    printf("[%s]\n", buf);
     if (n == -1) {
         *event = EVENT_DISCONNECT;
         int errnum = errno;
@@ -188,10 +189,14 @@ void read_event(int *s_dial, char **data, EventType *event, char *cli_info, Serv
     }
     else {
         int length = filter(buf, BUFFER_SIZE);
+        printf("newbuf = [%s]\n", buf);
+        printf("length = %d\n", length);
+        printf("strlen(buf) = %ld\n", strlen(buf));
         ServerReplyType reply = REPLY_FORMAT_ERROR;
         //Prepare data string
-        *data = malloc_str(length);
-        strncpy(*data, buf, strlen(buf));
+        *data = malloc_str(strlen(buf));
+        strcpy(*data, buf);
+        printf("data = %s\n", *data);
         *event = EVENT_UKN;
         if (length >= QUERY_CODE_LENGTH) {
             char *code = malloc_str(QUERY_CODE_LENGTH);
