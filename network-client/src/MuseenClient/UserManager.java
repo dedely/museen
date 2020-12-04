@@ -8,16 +8,8 @@ import java.security.NoSuchAlgorithmException;
 public class UserManager {
 	
 	int unsuccessful = 0;
-	
-	public static String securize(String authKey) {
-		//System.out.println(authKey);
-		String hashedKey = encrypt(authKey);
-		//System.out.println(hashedKey);
-		return hashedKey;
-		
-	}
-	
-	private static String encrypt(String password) {
+
+	public static String encrypt(String password) {
 		MessageDigest md;
 		try {
 			//On sélectionne le bon MessageDigest (c'est un factory pattern)
@@ -42,12 +34,13 @@ public class UserManager {
 	public static boolean login(String authKey) {
 		boolean connected = false;
 		String answer;
-		String hashedKey = UserManager.securize(authKey);
+		String hashedKey = UserManager.encrypt(authKey);
 		String code = "LOGN";
 			
 		try {
 			answer = ClientTCP.send(code, hashedKey);
 			String[] answerarray = answer.split(";");
+			
 			if(answerarray[0].equals("110")) {
 				User user = new User(answerarray[1], authKey, 1);
 				connected = true;

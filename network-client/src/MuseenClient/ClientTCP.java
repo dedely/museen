@@ -66,11 +66,11 @@ public class ClientTCP {
 				break;
 		}
 		
-		if(datag != "none") {
+		if(!datag.equals("none")) {
 			
-			//System.out.println("Le datagramme est "+datag);
+			System.out.println("Le datagramme est "+datag);
 			// On envoit le message associe au code au serveur
-	        flux_sortie.println (datag);
+	        flux_sortie.println(datag);
 	        
 	        // On recupere la reponse du serveur
 	        reponse = flux_entree.readLine() ;
