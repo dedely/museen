@@ -74,11 +74,11 @@ function signup(): void
  */
 function get_artistic_movements(): array
 {
-    $query = "SELECT artistic_movement_name FROM artistic_movement;";
+    $query = "SELECT artistic_movement_id, artistic_movement_name FROM artistic_movement;";
     $movements = array();
     if (($result = make_query($query)) != FALSE) {
-        while ($movement = pg_fetch_row($result)) {
-            $movements[] = $movement[0];
+        while ($movement = pg_fetch_row($result, NULL, PGSQL_ASSOC)) {
+            $movements[] = $movement;
         }
     }
     return $movements;
@@ -136,16 +136,80 @@ function get_possible_preferred_artists(string $id): array
     return $artists;
 }
 
+function are_set_movement_preferences(string $id)
+{
+    $are_set = false;
+    $query = "SELECT amp_artistic_movement_id FROM artistic_movement_preference WHERE amp_visitor_id = '" . $id . "';";
+    if (($result = make_query($query)) != FALSE) {
+        $are_set = (pg_num_rows($result) >  0);
+    }
+    return $are_set;
+}
+
+function is_signed_in(): bool
+{
+    return isset($_SESSION["user"]);
+}
+
+/**
+ * Stores artistic movement preferences
+ * Precondition : preferences should not have been set before for the provided visitor
+ *
+ * @param string $visitor_id
+ * @param array $preferences array of amp_artistic_movement_id
+ * @return void
+ */
+function store_movement_preferences(string $visitor_id, array $preferences): bool
+{
+    $score = 5;
+    $query = "INSERT INTO artistic_movement_preference(amp_visitor_id, amp_artistic_movement_id, amp_score)";
+    $query .= " VALUES\n";
+    for ($i=0; $i < count($preferences) - 1; $i++) { 
+        $amp_artistic_movement_id = $preferences[$i];
+        $query .= "('".$visitor_id."', ".$amp_artistic_movement_id.", ".$score."),\n";
+        if($score > 1){
+            $score --;
+        } 
+    }
+    $query .= "('".$visitor_id."', ".$preferences[$i].", ".$score.");";
+    $result = make_query($query);
+    return pg_result_status($result) === PGSQL_COMMAND_OK;
+}
+
+/**
+ * Undocumented function
+ *
+ * @return void
+ */
+function handle_preferences(): void
+{
+    $validInput = false;
+    if (isset($_GET["movementSelect1"], $_GET["movementSelect2"], $_GET["movementSelect3"])) {
+        $a = $_GET["movementSelect1"];
+        $b = $_GET["movementSelect2"];
+        $c = $_GET["movementSelect3"];
+        $validInput = ($a !== $b) &&  ($a !== $c) && ($b !== $c);
+    }
+    if ($validInput && !are_set_movement_preferences($_SESSION["user"])) {
+        $preferences = array($a, $b, $c);
+        $res = store_movement_preferences($_SESSION["user"], $preferences);
+    } else {
+        header("location:preferences.php");
+    }
+}
+
 /*----------------Display----------------*/
 
-function show_movements_form(array $movements = NULL): void
+function show_movements_form(int $movementSelectId = 1): void
 {
-    if (is_null($movements)) {
-        $movements = get_artistic_movements();
-    }
+    $movements = get_artistic_movements();
     $cpt = count($movements);
-    //TODO
-
+    echo "<select name=\"movementSelect" . $movementSelectId . "\" id=\"movementSelect" . $movementSelectId . "\" >\n";
+    echo "\t\t\t<option value=\"none\" selected=\"selected\" disabled=\"disabled\" hidden=\"hidden\">Préférence n°" . $movementSelectId . "</option>\n";
+    for ($i = 0; $i < $cpt; $i++) {
+        echo "\t\t\t<option value=\"" . $movements[$i]["artistic_movement_id"] . "\">" . $movements[$i]["artistic_movement_name"] . "</option>\n";
+    }
+    echo "\t\t</select>\n";
 }
 
 /*----------------$_SESSION setters----------------*/
@@ -163,6 +227,13 @@ function set_session_authkey(string $authkey): void
 }
 
 /*----------------Utility----------------*/
+
+function check_sign_in(string $page = "signin.php"): void
+{
+    if (!is_signed_in()) {
+        header("location:" . $page);
+    }
+}
 
 function custom_stylesheet(string $stylesheet = NULL): void
 {
