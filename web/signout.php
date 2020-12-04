@@ -1,6 +1,10 @@
 <?php
 session_start();
-unset($_COOKIE["remember"]);
+if(isset($_COOKIE["remember"])){
+    unset($_COOKIE["remember"]);
+}
+if(isset($_SESSION["user"])){
+    unset($_SESSION["user"]);
+}
 session_destroy();
 header("location:index.php");
-?>

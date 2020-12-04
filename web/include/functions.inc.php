@@ -219,6 +219,15 @@ function show_signin_button(): void
     echo "<a class=\"btn btn-outline-primary\" href=\"./signin.php\">Connexion</a>\n";
 }
 
+function show_disconnect_button(): void{
+    echo "<a class=\"btn btn-outline-secondary\" href=\"./signout.php\">Déconnexion</a>\n";
+}
+
+/**
+ * depreciated
+ *
+ * @return void
+ */
 function show_account_button(): void
 {
     echo "<div class=\"input-group-prepend\">\n";
@@ -281,7 +290,7 @@ function check_remember_cookie() : void {
 function custom_stylesheet(string $stylesheet = NULL): void
 {
     if (isset($stylesheet)) {
-        echo "<link rel=\"stylesheet\" href=\"" . $stylesheet . "\" / >\n";
+        echo "<link rel=\"stylesheet\" href=\"" . $stylesheet . "\"/>\n";
     }
 }
 
