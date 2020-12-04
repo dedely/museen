@@ -22,7 +22,7 @@ require_once "include/head.inc.php";
             <input type="checkbox" id="remember" name="remember" value="remember-me" />
         </div>
         <button class="btn btn-lg btn-primary btn-block" type="submit">Connexion</button>
-        <p class="mt-5 mb-3">Pas inscrit? <a href="signup.php">S'inscrire.</a></p>
+        <p class="mt-5 mb-3">Pas encore inscrit? <a href="signup.php">S'inscrire.</a></p>
     </form>
 </body>
 

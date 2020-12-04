@@ -29,7 +29,7 @@ function signin(string $referrer = "index.php"): void
                 header("location:" . $referrer);
             }
         } else {
-            //TODO
+            $_SESSION["signinError"] = true;
         }
     }
 }
@@ -41,6 +41,7 @@ function signin(string $referrer = "index.php"): void
  */
 function signup(): void
 {
+    $errors = array();
     if (isset($_POST["id"], $_POST["firstName"], $_POST["lastName"], $_POST["birthdate"], $_POST["password"])) {
         $id = $_POST["id"];
         $firstName = $_POST["firstName"];
@@ -52,7 +53,17 @@ function signup(): void
         $authkey = generate_random_string(AUTHKEY_LENGTH);
         $authkey_hash = hash("sha256", $authkey);
 
-        if (is_visitor_id($id)) {
+        
+        if(!is_smaller_str($firstName, 20)){
+            $errors["firstNameError"] = true;
+        }
+        if(!is_smaller_str($lastName, 20)){
+            $errors["lastNameError"] = true;
+        }
+        if(!is_visitor_id($id)){
+            $errors["idError"] = true;
+        }
+        if (empty($errors)) {
             $query = "INSERT INTO public.visitor (visitor_id, visitor_first_name, visitor_last_name, visitor_birthdate, visitor_password_hash,
             visitor_authkey_hash) VALUES ('" . $id . "', '" . $firstName . "', '" . $lastName . "', '" . $birthDate . "', '" . $password_hash . "', '" . $authkey_hash . "');";
             $result = make_query($query);
@@ -64,8 +75,8 @@ function signup(): void
                 header("location:preferences.php");
             }
         }
-        //TODO
     }
+    set_session_errors($errors);
 }
 
 /**
@@ -253,6 +264,11 @@ function remember_cookie(): void
 }
 
 /*----------------$_SESSION setters----------------*/
+
+function set_session_errors(array $errors){
+    unset($_SESSION["errors"]);
+    $_SESSION["errors"] = $errors;
+}
 
 function set_session_user(string $id): void
 {
