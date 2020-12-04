@@ -151,17 +151,14 @@ function is_smaller_str(string $str, int $max_length = 64): bool
     return strlen($str) <= $max_length;
 }
 
-        if (is_visitor_id($id)) {
-            $query = "INSERT INTO public.visitor (visitor_id, visitor_first_name, visitor_last_name, visitor_birthdate, visitor_password_hash,
-            visitor_authkey_hash) VALUES ('" . $id . "', '" . $firstName . "', '" . $lastName . "', '" . $birthDate . "', '" . $password_hash . "', '" . $authkey_hash . "');";
-            $result = make_query($query);
-            $status = pg_result_status($result);
-            if ($status == PGSQL_COMMAND_OK) {
-                set_session_user($id);
-                //Save the authkey to be able to display it later to the user.
-                set_session_authkey($authkey);
-                header("location:preferences.php");
-            }
-        }
-    }
+/**
+ * Checks if the provided string meets the visitor_id format
+ *
+ * @param string $str
+ * @return boolean
+ */
+function is_visitor_id(string $str): bool
+{
+    //TODO
+    return true;
 }
