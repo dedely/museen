@@ -41,11 +41,11 @@ char *query_login(PGconn *conn, char *auth_key) {
     ExecStatusType resultStatus;
     resultStatus = PQresultStatus(result);
 
-    //printf("%s\n", PQresStatus(resultStatus));
-    //printf("%s\n", PQresultErrorMessage(result));
+    printf("%s\n", PQresStatus(resultStatus));
+    printf("%s\n", PQresultErrorMessage(result));
     if ((resultStatus == PGRES_TUPLES_OK) && PQntuples(result) == 1) {
         strncat(id, PQgetvalue(result, 0, 0), ID_SIZE);
-        //printf("result = %s\n", id);
+        printf("result = %s\n", id);
     }
     return id;
 }

@@ -1,5 +1,5 @@
 <?php
-require_once "include/postgresql.conf.inc.php";
+require_once "./include/postgresql.conf.inc.php";
 define("HASHING_ALGO", "sha256");
 define("DEBUG", false);
 define("AUTHKEY_LENGTH", 15);

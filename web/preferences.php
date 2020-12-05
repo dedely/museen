@@ -1,9 +1,9 @@
 <?php
-require_once "include/functions.inc.php";
+require_once "./include/functions.inc.php";
 session_start();
 check_sign_in_redirect();
 $title = "Préférences · museen";
-require_once "include/head.inc.php";
+require_once "./include/head.inc.php";
 ?>
 
 <body class="text-center">
@@ -23,6 +23,4 @@ require_once "include/head.inc.php";
         </form>
     </section>
 
-</body>
-
-<?php require_once "include/footer.inc.php" ?>
+    <?php require_once "./include/footer.inc.php" ?>

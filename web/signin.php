@@ -1,10 +1,10 @@
 <?php
-require_once "include/functions.inc.php";
+require_once "./include/functions.inc.php";
 session_start();
 signin();
 $title = "Connexion · museen";
-$stylesheet = "css/signin.css";
-require_once "include/head.inc.php";
+$stylesheet = "./css/signin.css";
+require_once "./include/head.inc.php";
 ?>
 
 <body class="text-center">

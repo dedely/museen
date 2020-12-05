@@ -1,9 +1,9 @@
 <?php
-require_once "include/functions.inc.php";
+require_once "./include/functions.inc.php";
 session_start();
 check_sign_in_redirect();
 $title = "Mon compte · museen";
-require_once "include/header.inc.php";
+require_once "./include/header.inc.php";
 ?>
 
 <body class=text-center>
@@ -14,8 +14,7 @@ require_once "include/header.inc.php";
     ?>
     <p>Plus de contenu sera bientôt disponible sur cette page! Merci de votre confiance.</p>
     <figure class="figure">
-        <img src="images/welcome.png" alt="Bienvenue!" id="coming_soon_img" class="figure-img img-fluid rounded" width="40%" height="40%"/>
+        <img src="./images/welcome.png" alt="Bienvenue!" id="coming_soon_img" class="figure-img img-fluid rounded" width="40%" height="40%"/>
     </figure>
-</body>
 
-<?php require_once "include/footer.inc.php"; ?>
+    <?php require_once "./include/footer.inc.php"; ?>

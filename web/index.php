@@ -1,9 +1,9 @@
 <?php
-require_once "include/functions.inc.php";
+require_once "./include/functions.inc.php";
 session_start();
 check_remember_cookie();
 $title = "Museen, le musée connecté.";
-require_once "include/header.inc.php";
+require_once "./include/header.inc.php";
 ?>
 
 <div class="jumbotron jumbotron-fluid">
@@ -22,7 +22,6 @@ require_once "include/header.inc.php";
   </div>
 
 </section>
+<?php require_once "./include/footer.inc.php" ?>
 
-</body>
 
-<?php require_once "include/footer.inc.php" ?>
