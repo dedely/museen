@@ -11,7 +11,7 @@
     <title><?php echo $title ?></title>
 
     <!-- Bootstrap core CSS -->
-    <link rel="stylesheet" href="./css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="./css/bootstrap.min.css" />
 </head>
 
 <body>
@@ -22,15 +22,15 @@
         </a>
         <nav class="my-2 my-md-0 mr-md-3">
             <?php
-            if (is_signed_in()) {
+            if (is_signed_in() || check_remember_cookie()) {
                 echo "<a class=\"p-2 text-dark\" href=\"./account.php\">Mon compte</a>\n";
             }
             ?>
         </nav>
         <?php
-        if (is_signed_in()) {
+        if (is_signed_in() || check_remember_cookie()) {
             show_disconnect_button();
-        }else{
+        } else {
             show_signin_button();
         }
         ?>

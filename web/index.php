@@ -1,7 +1,6 @@
 <?php
 require_once "./include/functions.inc.php";
 session_start();
-check_remember_cookie();
 $title = "Museen, le musée connecté.";
 require_once "./include/header.inc.php";
 ?>
@@ -23,5 +22,3 @@ require_once "./include/header.inc.php";
 
 </section>
 <?php require_once "./include/footer.inc.php" ?>
-
-

@@ -204,6 +204,26 @@ function handle_preferences(): void
     }
 }
 
+/**
+ * Checks if a visitor_id is registered in the database
+ *
+ * @param string $id
+ * @return boolean
+ */
+function is_registered(string $id): bool
+{
+    $registered = false;
+    if (is_visitor_id($id)) {
+        $query = "SELECT visitor_id FROM visitor WHERE visitor_id = '" . $id . "';";
+        if (($result = make_query($query)) != FALSE) {
+            if (pg_num_rows($result) == 1) {
+                $registered = true;
+            }
+        }
+    }
+    return $registered;
+}
+
 /*----------------Display----------------*/
 
 function display_popular_artworks(): void
@@ -353,13 +373,18 @@ function check_sign_in_redirect(string $page = "signin.php"): void
     }
 }
 
-function check_remember_cookie(): void
+function check_remember_cookie(): bool
 {
-    if (!is_signed_in()) {
-        if (isset($_COOKIE["remember"])) {
-            set_session_user($_COOKIE["remember"]);
+    $signin = false;
+    if (isset($_COOKIE["remember"])) {
+        if (is_registered($_COOKIE["remember"])) {
+            if (!isset($_SESSION["user"])) {
+                set_session_user($_COOKIE["remember"]);
+            }
+            $signin = true;
         }
     }
+    return $signin;
 }
 
 function custom_stylesheet(string $stylesheet = NULL): void
