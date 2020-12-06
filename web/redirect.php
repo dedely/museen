@@ -1,0 +1,1 @@
+<?php header('Location:http://adelabbas.alwaysdata.net/museen/index.php'); exit; ?>
