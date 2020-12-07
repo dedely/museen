@@ -15,6 +15,7 @@ int store_position(PGconn *conn, char *id, char *loc, char *time_in, char *time_
 void insert_test(PGconn *conn);
 void auth_test(PGconn *conn);
 char *query_info(PGconn *conn, char *loc);
-char *query_sugg(PGconn *conn, char *id);
+char *query_sugg(PGconn *conn, char *loc);
+void info_test(PGconn *conn, char *loc);
 
 #endif /* _QUERY_H_ */

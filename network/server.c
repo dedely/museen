@@ -219,7 +219,7 @@ void run_debug(char *db_url) {
     insert_test(conn);
     auth_test(conn);
 
-    query_info(conn, "12");
-    query_sugg(conn, "HeroAllistair");
+    info_test(conn, "12");
+    //query_sugg(conn, "HeroAllistair");
     PQfinish(conn);
 }

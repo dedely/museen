@@ -182,3 +182,46 @@ void auth_test(PGconn *conn) {
     printf("Running authentification query test...\n");
     query_login(conn, DEBUG_KEY);
 }
+
+void info_test(PGconn *conn, char *loc) {
+    char *infos = NULL;
+    char query[INFO_QUERY_MAX_SIZE] = "SELECT ATWK.artwork_title, ATWK.artwork_type, ATWK.artwork_date, AR.artist_first_name, AR.artist_last_name, AR.artist_birth, AR.artist_death, AR.artist_bio, AM.artistic_movement_name, L.loc_room_name ";
+
+    strncat(query, "FROM artwork AS ATWK JOIN location AS L ON L.loc_id = ATWK.artwork_location JOIN artist AS AR ON ATWK.artwork_artist = AR.artist_id ", INFO_QUERY_MAX_SIZE - strlen(query));
+    strncat(query, "JOIN artistic_movement AS AM ON ATWK.artwork_movement_id = AM.artistic_movement_id WHERE L.loc_id = ", INFO_QUERY_MAX_SIZE - strlen(query));
+    strncat(query, loc, INFO_QUERY_MAX_SIZE - strlen(query));
+    strncat(query, ";", INFO_QUERY_MAX_SIZE - strlen(query));
+    printf("Running info query test...\n");
+    printf("%s\n", query);
+    PGresult *result;
+    result = PQexec(conn, query);
+    ExecStatusType resultStatus;
+    resultStatus = PQresultStatus(result);
+    printf("%s\n", PQresStatus(resultStatus));
+    printf("%s\n", PQresultErrorMessage(result));
+    //Format results
+    if ((resultStatus == PGRES_TUPLES_OK) && PQntuples(result) == 1) {
+        int col = PQnfields(result);
+        int size = col - 1;
+        int i;
+        char *tmp;
+        for (i = 0; i < col; i++) {
+            size += PQgetlength(result, 0, i);
+        }
+        printf("size = %d\n", size);
+        infos = malloc_str(size);
+        for (int i = 0; i < col; i++) {
+            tmp = (PQgetisnull(result, 0, i)) ? "?" : PQgetvalue(result, 0, i);
+            //Call strncpy first
+            if (i == 0) {
+                strncpy(infos, tmp, size - strlen(infos));
+            }
+            else {
+                strncat(infos, SEPARATOR, size - strlen(infos));
+                strncat(infos, tmp, size - strlen(infos));
+            }
+        }
+    }
+
+    printf("result:\n%s\n", infos);
+}
