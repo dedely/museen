@@ -187,6 +187,7 @@ int is_timestamp(char *str) {
         result.tm_mday = day;
         result.tm_hour = hour;
         result.tm_min = min;
+        result.tm_sec  = sec;
         //mktime returns -1 for errors
         if ((time = mktime(&result)) != (time_t)-1) {
             is_timestamp = 1;
